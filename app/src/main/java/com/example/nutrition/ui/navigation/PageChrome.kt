@@ -131,7 +131,10 @@ fun PageTitle(
     ) {
         if (rootPage) {
             // MainScreen draws a single title that stays left-aligned while shrinking.
-            Spacer(Modifier.height(titleHeight))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.height(titleHeight).weight(1f))
+                action?.invoke()
+            }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = MaterialTheme.typography.headlineLarge, color = TextPrimary, modifier = Modifier.weight(1f))

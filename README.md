@@ -1,27 +1,27 @@
 # WeDo · Android 营养与身体记录
 
-[![Release](https://img.shields.io/github/v/release/Joshmax010/wedo-Android?style=flat-square)](https://github.com/Joshmax010/wedo-Android/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Joshmax010/wedo-fitness?style=flat-square)](https://github.com/Joshmax010/wedo-fitness/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square)](https://developer.android.com)
-[![CI](https://github.com/Joshmax010/wedo-Android/actions/workflows/cloud-tests.yml/badge.svg)](https://github.com/Joshmax010/wedo-Android/actions/workflows/cloud-tests.yml)
+[![CI](https://github.com/Joshmax010/wedo-fitness/actions/workflows/cloud-tests.yml/badge.svg)](https://github.com/Joshmax010/wedo-fitness/actions/workflows/cloud-tests.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](./LICENSE)
 
 WeDo 是一款以本地数据为基础的 Android 营养记录工具。按餐记录饮食与摄入量，对照每日目标查看完成情况，通过周报和身体趋势回顾变化。无需注册账户，核心功能可离线使用。
 
-**[下载 v1.4.5 安装包](https://github.com/Joshmax010/wedo-Android/releases/download/v1.4.5/wedo-fitness-v1.4.5.apk)** · [版本说明](https://github.com/Joshmax010/wedo-Android/releases/tag/v1.4.5) · [维护指南](./MAINTENANCE.md) · [English](#english)
+**[下载 v1.4.6 安装包](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk)** · [版本说明](https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.6) · [维护指南](./MAINTENANCE.md) · [English](#english)
 
 ## 安装与升级
 
 | 项目 | 说明 |
 | --- | --- |
-| 版本 | 1.4.5（versionCode 6） |
+| 版本 | 1.4.6（versionCode 7） |
 | 系统要求 | Android 8.0（API 26）及以上 |
-| 安装包 | `wedo-fitness-v1.4.5.apk`，约 2.2 MB，见 GitHub Releases 的 Assets |
+| 安装包 | `wedo-fitness-v1.4.6.apk`，约 2.2 MB，见 GitHub Releases 的 Assets |
 | 应用包名 | `com.example.nutrition` |
-| 校验信息 | [SHA-256 校验文件](https://github.com/Joshmax010/wedo-Android/releases/download/v1.4.5/wedo-fitness-v1.4.5.apk.sha256)；签名证书指纹见 Release 说明及维护指南 |
+| 校验信息 | [SHA-256 校验文件](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk.sha256)；签名证书指纹见 Release 说明及维护指南 |
 
 下载 APK 后在手机上安装；首次安装需允许对应来源安装应用。升级前在「设置 → 数据管理」导出 JSON 备份，并保存到应用之外的位置。
 
-- **官方 v1.4.3 用户**：v1.4.5 沿用原发布签名，可以覆盖升级并保留数据。
+- **官方 v1.4.3 用户**：v1.4.6 沿用原发布签名，可以覆盖升级并保留数据。
 - **本轮 debug 测试包用户**：测试包与正式发布包的签名不同，不能覆盖安装。先导出并保存 JSON 备份，再卸载测试包、安装正式包，最后在「数据管理」导入备份。**卸载会清除本地数据，必须先确认备份已保存。**
 
 ## 主要功能
@@ -60,7 +60,7 @@ WeDo 是一款以本地数据为基础的 Android 营养记录工具。按餐记
 使用 **JDK 21** 运行 Gradle，安装 Android SDK Platform 34，并通过 Android Studio 或 `local.properties` 指定 SDK 路径。Java / Kotlin 源码目标为 JVM 17；Gradle 运行环境与源码目标不同。
 
 ```bash
-git clone https://github.com/Joshmax010/wedo-Android.git
+git clone https://github.com/Joshmax010/wedo-fitness.git
 cd wedo-Android
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
@@ -110,7 +110,7 @@ Debug APK 输出到 `app/build/outputs/apk/debug/app-debug.apk`。Room instrumen
 
 WeDo is a local-first nutrition and body-metrics tracker for Android 8.0+. Log breakfast, lunch, dinner and snacks, scale food templates by portion weight, compare daily intake with goals, and review weekly reports and body trends.
 
-**[Download v1.4.5](https://github.com/Joshmax010/wedo-Android/releases/download/v1.4.5/wedo-fitness-v1.4.5.apk)** · [Release notes](https://github.com/Joshmax010/wedo-Android/releases/tag/v1.4.5)
+**[Download v1.4.6](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk)** · [Release notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.6)
 
 This release improves atomic backup imports, error recovery, scrolling headers and history editing. Main-page titles collapse from 32sp to 20sp on the left; the 20sp WeDo button on the right opens this repository in the system browser. Secondary settings pages omit the main bottom navigation.
 

@@ -100,9 +100,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
-    if (section == SettingsSection.MAIN) {
-        com.example.nutrition.ui.navigation.TrackRootTitleScroll { scrollState.value.toFloat() }
-    }
+    com.example.nutrition.ui.navigation.TrackRootTitleScroll { scrollState.value.toFloat() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showAppearance by remember { mutableStateOf(false) }
 

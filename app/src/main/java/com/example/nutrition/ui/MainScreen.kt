@@ -109,13 +109,13 @@ fun MainScreen() {
     val topBarColor = BgMain
     val expandedTitleOffset = with(density) { 8.dp.toPx() }
     val pagePadding = PaddingValues(
-        top = if (rootPage != null) 8.dp else topBarHeight,
+        top = 8.dp,
         bottom = if (rootPage != null && !keyboardOpen) 96.dp else 16.dp
     )
     CompositionLocalProvider(
         LocalPageChrome provides chrome,
         LocalPageContentPadding provides pagePadding,
-        LocalRootPage provides (rootPage != null),
+        LocalRootPage provides true,
         LocalPageTopBarHeight provides topBarHeight
     ) {
         Scaffold(
@@ -139,34 +139,26 @@ fun MainScreen() {
                             modifier = Modifier.fillMaxWidth().height(topBarHeight).padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (rootPage == null) {
-                                TextButton(onClick = { navController.popBackStack() }, modifier = Modifier.width(84.dp)) {
-                                    Text("‹ 返回", color = Primary)
+                            Text(
+                                title,
+                                style = MaterialTheme.typography.headlineLarge,
+                                color = TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f).semantics { heading() }.graphicsLayer {
+                                    val fraction = chrome.titleCollapseFraction
+                                    val scale = 1f - fraction * (1f - 20f / 32f)
+                                    scaleX = scale
+                                    scaleY = scale
+                                    transformOrigin = TransformOrigin(0f, 0.5f)
+                                    translationY = expandedTitleOffset * (1f - fraction)
                                 }
-                                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                                    Text(chrome.notice?.message ?: if (chrome.collapsed) title else "", color = TextPrimary, fontWeight = FontWeight.SemiBold)
-                                }
-                                Box(Modifier.width(84.dp))
-                            } else {
-                                Text(
-                                    title,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    color = TextPrimary,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f).semantics { heading() }.graphicsLayer {
-                                        val fraction = chrome.titleCollapseFraction
-                                        val scale = 1f - fraction * (1f - 20f / 32f)
-                                        scaleX = scale
-                                        scaleY = scale
-                                        transformOrigin = TransformOrigin(0f, 0.5f)
-                                        translationY = expandedTitleOffset * (1f - fraction)
-                                    }
-                                )
+                            )
+                            if (rootPage != null) {
                                 TextButton(
                                     onClick = {
                                         try {
-                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Joshmax010/wedo-Android")))
+                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Joshmax010/wedo-fitness")))
                                         } catch (_: ActivityNotFoundException) {
                                             Toast.makeText(context, "未找到可打开链接的应用", Toast.LENGTH_SHORT).show()
                                         }

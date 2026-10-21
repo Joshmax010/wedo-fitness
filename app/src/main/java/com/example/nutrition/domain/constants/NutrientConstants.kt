@@ -16,7 +16,7 @@ object NutrientConstants {
 
     const val APP_NAME = "nutrition-tracker"
     const val SCHEMA_VERSION = 3
-    const val APP_VERSION = "1.4.5"
+    const val APP_VERSION = "1.4.6"
 
     // ==================== 宏量营养素默认值 ====================
 
