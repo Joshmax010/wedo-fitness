@@ -507,6 +507,9 @@ class BackupManagerTest {
 
         override fun getAllRecords(): Flow<Map<String, DayRecords>> = flowOf(records.toMap())
 
+        override fun getRecordsByDateRange(startDate: String, endDate: String): Flow<Map<String, DayRecords>> =
+            flowOf(records.filterKeys { it in startDate..endDate }.toMap())
+
         override fun getDayRecords(dateStr: String): Flow<DayRecords> {
             return flowOf(records[dateStr] ?: DayRecords(dateStr = dateStr))
         }

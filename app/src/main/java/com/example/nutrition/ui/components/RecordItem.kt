@@ -1,5 +1,7 @@
 package com.example.nutrition.ui.components
 
+import com.example.nutrition.domain.usecase.UnitConverter
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -157,7 +159,7 @@ private fun RecordItemContent(record: MealRecord) {
                 maxLines = 1,
                 modifier = Modifier.weight(1f)
             )
-            val weightText = if (record.weightGrams == 100.0) "" else "${formatNutrient(record.weightGrams)}g · "
+            val weightText = if (record.weightGrams == 100.0) "" else "${UnitConverter.formatNutrient(record.weightGrams)}g · "
             Text(
                 text = "${weightText}${record.calories.toInt()} kcal",
                 fontSize = 16.sp,
@@ -168,9 +170,9 @@ private fun RecordItemContent(record: MealRecord) {
 
         // 宏量营养素标签
         val macroTags = buildList {
-            if (record.protein > 0) add("蛋白质 ${formatNutrient(record.protein)}g")
-            if (record.fat > 0) add("脂肪 ${formatNutrient(record.fat)}g")
-            if (record.carbs > 0) add("碳水 ${formatNutrient(record.carbs)}g")
+            if (record.protein > 0) add("蛋白质 ${UnitConverter.formatNutrient(record.protein)}g")
+            if (record.fat > 0) add("脂肪 ${UnitConverter.formatNutrient(record.fat)}g")
+            if (record.carbs > 0) add("碳水 ${UnitConverter.formatNutrient(record.carbs)}g")
         }
 
         if (macroTags.isNotEmpty()) {
@@ -189,7 +191,7 @@ private fun RecordItemContent(record: MealRecord) {
         val displayMicros = record.micronutrients.map { micro ->
             val name = NutrientConstants.getMicroName(micro.key)
             val unit = NutrientConstants.getMicroUnit(micro.key)
-            Triple(micro.key, name, "${formatNutrient(micro.value)}$unit")
+            Triple(micro.key, name, "${UnitConverter.formatNutrient(micro.value)}$unit")
         }
 
         if (displayMicros.isNotEmpty()) {
@@ -228,10 +230,3 @@ private fun NutrientTag(text: String, isMicro: Boolean) {
     }
 }
 
-private fun formatNutrient(value: Double): String {
-    return if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.1f", value)
-    }
-}

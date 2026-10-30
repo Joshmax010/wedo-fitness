@@ -28,6 +28,9 @@ object UnitConverter {
     fun kjToKcal(kj: Double): Double = kj / KJ_PER_KCAL
 
     /** 格式化为输入框友好文本：整数不带小数点，非整数保留 1 位小数 */
+    /** 格式化营养素数值展示（整数不带小数点，小数保留1位） */
+    fun formatNutrient(value: Double): String = formatForInput(value)
+
     fun formatForInput(value: Double): String {
         return if (value == value.toLong().toDouble()) {
             value.toLong().toString()

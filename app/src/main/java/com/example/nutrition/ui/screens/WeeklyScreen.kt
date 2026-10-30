@@ -61,9 +61,7 @@ import kotlin.math.min
 @Composable
 fun WeeklyScreen(
     viewModel: WeeklyViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { WeeklyViewModel(NutritionApp.instance.repository) }
-        }
+        factory = NutritionApp.appViewModelFactory { repo, _ -> WeeklyViewModel(repo) }
     )
 ) {
     val context = LocalContext.current

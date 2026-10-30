@@ -351,6 +351,8 @@ class InteropTest {
             this.targets = targets; return Resource.Success(Unit)
         }
         override fun getAllRecords(): Flow<Map<String, DayRecords>> = flowOf(records.toMap())
+        override fun getRecordsByDateRange(startDate: String, endDate: String): Flow<Map<String, DayRecords>> =
+            flowOf(records.filterKeys { it in startDate..endDate }.toMap())
         override fun getDayRecords(dateStr: String): Flow<DayRecords> =
             flowOf(records[dateStr] ?: DayRecords(dateStr = dateStr))
         override suspend fun setDayRecords(dateStr: String, dayData: DayRecords): Resource<Unit> {

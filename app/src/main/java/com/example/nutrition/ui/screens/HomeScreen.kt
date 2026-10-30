@@ -45,12 +45,16 @@ import com.example.nutrition.domain.model.MealKey
 import com.example.nutrition.domain.usecase.DateUtils
 import com.example.nutrition.ui.components.BarProgress
 import com.example.nutrition.ui.components.GuideOverlay
+import com.example.nutrition.ui.components.DateNavigationBar
 import com.example.nutrition.ui.components.MealCard
 import com.example.nutrition.ui.components.RingProgress
 import com.example.nutrition.ui.theme.BgCard
 import com.example.nutrition.ui.theme.BgMain
 import com.example.nutrition.ui.theme.BgTag
 import com.example.nutrition.ui.theme.Error
+import com.example.nutrition.ui.theme.CarbsColor
+import com.example.nutrition.ui.theme.FatColor
+import com.example.nutrition.ui.theme.ProteinColor
 import com.example.nutrition.ui.theme.Primary
 import com.example.nutrition.ui.theme.TextInverse
 import com.example.nutrition.ui.theme.TextPlaceholder
@@ -68,9 +72,7 @@ import java.time.LocalDate
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { HomeViewModel(NutritionApp.instance.repository) }
-        }
+        factory = NutritionApp.appViewModelFactory { repo, _ -> HomeViewModel(repo) }
     ),
     onNavigateToRecord: (MealKey?, String) -> Unit = { _, _ -> }
 ) {
@@ -133,7 +135,7 @@ fun HomeScreen(
 
             // 日期栏
             item {
-                DateBar(
+                DateNavigationBar(
                     dateStr = uiState.currentDate,
                     isToday = uiState.isToday,
                     onPrev = { viewModel.prevDay() },
@@ -172,12 +174,18 @@ fun HomeScreen(
                     DashboardCard(title = "宏量营养素") {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             uiState.macros.forEach { macro ->
+                                val macroColor = when (macro.label) {
+                                    "蛋白质" -> ProteinColor
+                                    "脂肪" -> FatColor
+                                    "碳水" -> CarbsColor
+                                    else -> Primary
+                                }
                                 BarProgress(
                                     current = macro.current,
                                     target = macro.target,
                                     label = macro.label,
                                     unit = macro.unit,
-                                    color = macro.color
+                                    color = macroColor
                                 )
                             }
                         }
@@ -271,7 +279,7 @@ private fun StorageWarnBanner(message: String) {
 }
 
 @Composable
-private fun DateBar(
+private fun DateNavigationBar(
     dateStr: String,
     isToday: Boolean,
     onPrev: () -> Unit,

@@ -73,9 +73,7 @@ import java.time.LocalDate
 @Composable
 fun BodyStatsScreen(
     viewModel: BodyStatsViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { BodyStatsViewModel(NutritionApp.instance.repository) }
-        }
+        factory = NutritionApp.appViewModelFactory { repo, _ -> BodyStatsViewModel(repo) }
     )
 ) {
     val context = LocalContext.current

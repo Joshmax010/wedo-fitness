@@ -44,6 +44,9 @@ interface RecordDao {
     @Query("SELECT * FROM day_records WHERE dateStr BETWEEN :start AND :end ORDER BY dateStr ASC")
     suspend fun getByDateRange(start: String, end: String): List<DayRecordEntity>
 
+    @Query("SELECT * FROM day_records WHERE dateStr BETWEEN :start AND :end ORDER BY dateStr ASC")
+    fun getByDateRangeFlow(start: String, end: String): Flow<List<DayRecordEntity>>
+
     /** 获取记录总天数 */
     @Query("SELECT COUNT(*) FROM day_records")
     suspend fun count(): Int

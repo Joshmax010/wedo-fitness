@@ -91,10 +91,8 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit = {},
     section: SettingsSection = SettingsSection.MAIN,
     viewModel: SettingsViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer {
-                SettingsViewModel(NutritionApp.instance.repository, NutritionApp.instance.backupManager)
-            }
+        factory = NutritionApp.appViewModelFactory { repo, backup ->
+            SettingsViewModel(repo, backup)
         }
     )
 ) {

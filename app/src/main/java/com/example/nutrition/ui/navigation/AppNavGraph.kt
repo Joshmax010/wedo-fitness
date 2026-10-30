@@ -1,5 +1,8 @@
 package com.example.nutrition.ui.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.EaseInOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavBackStackEntry
@@ -30,11 +33,55 @@ import com.example.nutrition.ui.screens.WeeklyScreen
  */
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    // --- 全局默认动画: Material Motion shared axis X ---
+    val defaultEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        slideInHorizontally(
+            initialOffsetX = { it / 4 },
+            animationSpec = tween(300, easing = EaseInOut)
+        ) + fadeIn(animationSpec = tween(300, easing = EaseInOut))
+    }
+    val defaultExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        slideOutHorizontally(
+            targetOffsetX = { -it / 4 },
+            animationSpec = tween(300, easing = EaseInOut)
+        ) + fadeOut(animationSpec = tween(300, easing = EaseInOut))
+    }
+    val defaultPopEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        slideInHorizontally(
+            initialOffsetX = { -it / 4 },
+            animationSpec = tween(300, easing = EaseInOut)
+        ) + fadeIn(animationSpec = tween(300, easing = EaseInOut))
+    }
+    val defaultPopExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        slideOutHorizontally(
+            targetOffsetX = { it / 4 },
+            animationSpec = tween(300, easing = EaseInOut)
+        ) + fadeOut(animationSpec = tween(300, easing = EaseInOut))
+    }
+
+    // --- Tab 切换使用轻量淡入淡出 ---
+    val tabEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        fadeIn(animationSpec = tween(200))
+    }
+    val tabExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        fadeOut(animationSpec = tween(200))
+    }
+
     NavHost(
         navController = navController,
-        startDestination = HomeRoute
+        startDestination = HomeRoute,
+        enterTransition = defaultEnter,
+        exitTransition = defaultExit,
+        popEnterTransition = defaultPopEnter,
+        popExitTransition = defaultPopExit
     ) {
-        composable<HomeRoute> {
+        // ========== 底部 Tab 页面 (淡入淡出) ==========
+        composable<HomeRoute>(
+            enterTransition = tabEnter,
+            exitTransition = tabExit,
+            popEnterTransition = tabEnter,
+            popExitTransition = tabExit
+        ) {
             HomeScreen(
                 onNavigateToRecord = { mealKey, date ->
                     navController.navigate(RecordRoute(mealKey = mealKey?.key, date = date)) {
@@ -48,14 +95,29 @@ fun AppNavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable<RecordRoute> { backStackEntry ->
+        composable<RecordRoute>(
+            enterTransition = tabEnter,
+            exitTransition = tabExit,
+            popEnterTransition = tabEnter,
+            popExitTransition = tabExit
+        ) { backStackEntry ->
             val route = backStackEntry.toRoute<RecordRoute>()
             RecordScreen(initialMeal = route.mealKey?.let(MealKey::fromKey), initialDate = route.date)
         }
-        composable<WeeklyRoute> {
+        composable<WeeklyRoute>(
+            enterTransition = tabEnter,
+            exitTransition = tabExit,
+            popEnterTransition = tabEnter,
+            popExitTransition = tabExit
+        ) {
             WeeklyScreen()
         }
-        composable<SettingsRoute> {
+        composable<SettingsRoute>(
+            enterTransition = tabEnter,
+            exitTransition = tabExit,
+            popEnterTransition = tabEnter,
+            popExitTransition = tabExit
+        ) {
             SettingsScreen(
                 onNavigateToTemplates = { navController.navigate(TemplatesRoute) },
                 onNavigateToBodyStats = { navController.navigate(BodyStatsRoute) },
@@ -64,6 +126,8 @@ fun AppNavGraph(navController: NavHostController) {
                 onNavigateToAbout = { navController.navigate(AboutRoute) }
             )
         }
+
+        // ========== 二级页面 (使用默认水平滑动+淡入) ==========
         composable<TemplatesRoute> {
             FoodTemplateScreen()
         }
@@ -86,7 +150,7 @@ fun AppNavGraph(navController: NavHostController) {
 @Composable
 private fun settingsViewModel(navController: NavHostController, entry: NavBackStackEntry): SettingsViewModel {
     val parent = remember(entry) { navController.getBackStackEntry(SettingsRoute) }
-    return viewModel(viewModelStoreOwner = parent, factory = viewModelFactory {
-        initializer { SettingsViewModel(NutritionApp.instance.repository, NutritionApp.instance.backupManager) }
+    return viewModel(viewModelStoreOwner = parent, factory = NutritionApp.appViewModelFactory { repo, backup ->
+        SettingsViewModel(repo, backup)
     })
 }

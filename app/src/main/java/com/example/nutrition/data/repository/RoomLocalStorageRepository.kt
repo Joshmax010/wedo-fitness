@@ -89,6 +89,15 @@ class RoomLocalStorageRepository(
             }
     }
 
+    override fun getRecordsByDateRange(startDate: String, endDate: String): Flow<Map<String, DayRecords>> {
+        return recordDao.getByDateRangeFlow(startDate, endDate)
+            .map { list ->
+                list.associate { entity ->
+                    entity.dateStr to entity.toDomain()
+                }
+            }
+    }
+
     override fun getDayRecords(dateStr: String): Flow<DayRecords> {
         return recordDao.getByDateFlow(dateStr)
             .map { it?.toDomain() ?: DayRecords(dateStr = dateStr) }

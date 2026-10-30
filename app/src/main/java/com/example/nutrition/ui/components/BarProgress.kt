@@ -1,5 +1,7 @@
 package com.example.nutrition.ui.components
 
+import com.example.nutrition.domain.usecase.UnitConverter
+
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -133,7 +135,7 @@ fun BarProgress(
             )
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = formatNumber(displayCurrent),
+                    text = UnitConverter.formatNutrient(displayCurrent),
                     fontSize = valueFontSize,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary
@@ -144,7 +146,7 @@ fun BarProgress(
                     color = TextPlaceholder
                 )
                 Text(
-                    text = "${formatNumber(target)}$unit",
+                    text = "${UnitConverter.formatNutrient(target)}$unit",
                     fontSize = targetFontSize,
                     color = TextPlaceholder
                 )
@@ -211,10 +213,3 @@ fun BarProgress(
     }
 }
 
-private fun formatNumber(value: Double): String {
-    return if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.1f", value)
-    }
-}

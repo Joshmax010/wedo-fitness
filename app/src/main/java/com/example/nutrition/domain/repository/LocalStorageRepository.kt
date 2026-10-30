@@ -33,6 +33,9 @@ interface LocalStorageRepository {
     /** 读取全部记录，返回日期 -> DayRecords 映射 */
     fun getAllRecords(): Flow<Map<String, DayRecords>>
 
+    /** 读取指定日期范围内的记录，返回日期 -> DayRecords 映射 */
+    fun getRecordsByDateRange(startDate: String, endDate: String): Flow<Map<String, DayRecords>>
+
     /** 读取某天记录，不存在则返回空 DayRecords */
     fun getDayRecords(dateStr: String): Flow<DayRecords>
 

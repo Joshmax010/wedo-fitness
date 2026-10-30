@@ -1,6 +1,5 @@
 package com.example.nutrition.viewmodel
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nutrition.domain.constants.NutrientConstants
@@ -12,9 +11,6 @@ import com.example.nutrition.domain.usecase.Calculator
 import com.example.nutrition.domain.usecase.DateUtils
 import com.example.nutrition.domain.usecase.MetabolismCalculator
 import com.example.nutrition.domain.usecase.UnitConverter
-import com.example.nutrition.ui.theme.CarbsColor
-import com.example.nutrition.ui.theme.FatColor
-import com.example.nutrition.ui.theme.ProteinColor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,8 +39,7 @@ class HomeViewModel(
         val current: Double,
         val target: Double,
         val label: String,
-        val unit: String,
-        val color: Color
+        val unit: String
     )
 
     data class MicroData(
@@ -140,9 +135,9 @@ class HomeViewModel(
                 },
                 // 宏量营养素
                 macros = listOf(
-                    MacroData(dayAgg.protein, targets.protein, "蛋白质", "g", ProteinColor),
-                    MacroData(dayAgg.fat, targets.fat, "脂肪", "g", FatColor),
-                    MacroData(dayAgg.carbs, targets.carbs, "碳水", "g", CarbsColor)
+                    MacroData(dayAgg.protein, targets.protein, "蛋白质", "g"),
+                    MacroData(dayAgg.fat, targets.fat, "脂肪", "g"),
+                    MacroData(dayAgg.carbs, targets.carbs, "碳水", "g")
                 ),
                 // 微量营养素
                 micros = targets.micronutrients.map { mn ->

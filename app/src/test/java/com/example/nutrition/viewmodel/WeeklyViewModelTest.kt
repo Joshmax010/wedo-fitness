@@ -7,6 +7,7 @@ import com.example.nutrition.domain.repository.LocalStorageRepository
 import com.example.nutrition.domain.usecase.BackupManagerTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -28,6 +29,8 @@ class WeeklyViewModelTest {
         val records = MutableStateFlow<Map<String, DayRecords>>(emptyMap())
         val repository = object : LocalStorageRepository by BackupManagerTest.FakeRepository() {
             override fun getAllRecords() = records
+            override fun getRecordsByDateRange(startDate: String, endDate: String) =
+                records.map { it.filterKeys { k -> k in startDate..endDate } }
         }
         val viewModel = WeeklyViewModel(repository)
         store.put("weekly", viewModel)

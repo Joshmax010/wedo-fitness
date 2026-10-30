@@ -65,6 +65,7 @@ import com.example.nutrition.domain.model.FoodTemplate
 import com.example.nutrition.domain.model.MealKey
 import com.example.nutrition.domain.usecase.DateUtils
 import com.example.nutrition.ui.components.NutrientPicker
+import com.example.nutrition.ui.components.DateNavigationBar
 import com.example.nutrition.ui.components.RecordItem
 import com.example.nutrition.ui.theme.BgCard
 import com.example.nutrition.ui.theme.BgMain
@@ -86,9 +87,7 @@ fun RecordScreen(
     initialMeal: MealKey? = null,
     initialDate: String? = null,
     viewModel: RecordViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { RecordViewModel(NutritionApp.instance.repository) }
-        }
+        factory = NutritionApp.appViewModelFactory { repo, _ -> RecordViewModel(repo) }
     )
 ) {
     val context = LocalContext.current
@@ -149,8 +148,9 @@ fun RecordScreen(
                     )
 
                     // ========== 日期选择 ==========
-                    DateBar(
+                    DateNavigationBar(
                         dateStr = uiState.currentDate,
+                        isToday = DateUtils.isToday(uiState.currentDate),
                         onPrev = { viewModel.prevDay() },
                         onNext = { viewModel.nextDay() },
                         onDateClick = {

@@ -52,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.NutritionApp
+import com.example.nutrition.domain.usecase.UnitConverter
 import com.example.nutrition.domain.model.FoodTemplate
 import com.example.nutrition.ui.theme.BgCard
 import com.example.nutrition.ui.theme.BgMain
@@ -70,9 +71,7 @@ import com.example.nutrition.viewmodel.FoodTemplateViewModel
 @Composable
 fun FoodTemplateScreen(
     viewModel: FoodTemplateViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { FoodTemplateViewModel(NutritionApp.instance.repository) }
-        }
+        factory = NutritionApp.appViewModelFactory { repo, _ -> FoodTemplateViewModel(repo) }
     )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -346,7 +345,7 @@ private fun TemplateItem(
                     }
                 }
                 Text(
-                    text = "${template.calories.toInt()} kcal · 蛋 ${formatNum(template.protein)}g · 脂 ${formatNum(template.fat)}g · 碳 ${formatNum(template.carbs)}g",
+                    text = "${template.calories.toInt()} kcal · 蛋 ${UnitConverter.formatNutrient(template.protein)}g · 脂 ${UnitConverter.formatNutrient(template.fat)}g · 碳 ${UnitConverter.formatNutrient(template.carbs)}g",
                     fontSize = 12.sp,
                     color = TextSecondary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -622,10 +621,3 @@ private fun TemplateTagEditor(viewModel: FoodTemplateViewModel, uiState: FoodTem
 }
 
 
-private fun formatNum(value: Double): String {
-    return if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.1f", value)
-    }
-}

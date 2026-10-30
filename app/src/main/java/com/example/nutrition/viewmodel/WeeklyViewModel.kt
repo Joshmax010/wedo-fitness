@@ -102,8 +102,10 @@ class WeeklyViewModel(
             val weekDates = getWeekDates(monday)
             val weekRange = DateUtils.formatWeekRange(monday)
 
-            // 读取目标配置
-            combine(repository.getTargets(), repository.getAllRecords()) { targets, records ->
+            // 读取目标配置与当前周日期范围内的记录（避免全量加载历史记录）
+            val start = weekDates.first()
+            val end = weekDates.last()
+            combine(repository.getTargets(), repository.getRecordsByDateRange(start, end)) { targets, records ->
                 (targets ?: NutrientConstants.getDefaultTargets()) to records
             }.collect { (targets, allRecords) ->
                 val weekSummary = Calculator.calcWeekSummary(allRecords, weekDates, targets)

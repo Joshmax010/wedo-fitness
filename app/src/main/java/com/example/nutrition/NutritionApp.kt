@@ -2,6 +2,9 @@ package com.example.nutrition
 
 import android.app.Application
 import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.data.local.db.NutritionDatabase
 import com.example.nutrition.data.repository.RoomLocalStorageRepository
 import com.example.nutrition.domain.constants.NutrientConstants
@@ -52,5 +55,12 @@ class NutritionApp : Application() {
     companion object {
         lateinit var instance: NutritionApp
             private set
+
+        /** 便捷 ViewModel 工厂 —— 消除各 Screen 重复的 viewModelFactory 样板代码 */
+        inline fun <reified VM : ViewModel> appViewModelFactory(
+            crossinline create: (LocalStorageRepository, BackupManager) -> VM
+        ) = viewModelFactory {
+            initializer { create(instance.repository, instance.backupManager) }
+        }
     }
 }
