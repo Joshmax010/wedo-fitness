@@ -1,5 +1,25 @@
 # 版本变更
 
+## 1.4.7 · 2026-10-30
+
+versionCode 8；Room 数据库保持 v4，备份 Schema 保持 v3。全套 149 个单元测试 100% 通过，已构建官方正式签名 APK。
+
+### 交互与动画
+
+- **页面层级转场动效**：基于 Navigation Compose 引入 Material Motion Shared Axis X 动效体系。
+  - 二级子页面（身体档案、食物模板、营养目标、数据管理、关于）：使用 300ms `EaseInOut` 水平平滑滑动与淡入推入/退出，大幅提升页面导航层次感与视觉质感。
+  - 4 个底部主导航 Tab（总览、录入、周报、设置）：采用轻量优雅的 200ms `fadeIn` / `fadeOut` 淡入淡出，保持主界面切换轻快且不眩晕。
+- **日期导航条规范统一**：提取 `DateNavigationBar` 独立通用组件，替换原首页与录入页中各自独立的重复实现，统一“今天”徽标与翻日点击交互。
+
+### 性能与架构优化
+
+- **周报数据范围按需加载**：在 Room DAO 及 LocalStorageRepository 增加 `getRecordsByDateRangeFlow` 范围查询支持，周报页由原先的全量历史遍历改为仅拉取当前周范围内的记录，解决历史数据积累导致的内存膨胀和运算卡顿问题。
+- **食物模板筛选缓存**：在模板页面对搜索与标签过滤计算应用 `remember` 派生缓存，避免在界面每帧重组时重复遍历过滤全部模板数据。
+- **ViewModel 与 UI 主题彻底解耦**：移除 `HomeViewModel` 中对 Compose UI `Color` 的直接依赖，将宏量颜色映射职责归位至 Composable 视图层，遵循清晰的 MVVM 分层。
+- **公共格式化逻辑收敛**：消除散落在图表、列表、模板页中的 3 处冗余 `formatNumber` / `formatNutrient` / `formatNum`，统一收敛至领域层 `UnitConverter.formatNutrient()`。
+- **ViewModel 工厂样板代码精简**：在 Application 层抽象 `appViewModelFactory` 辅助方法，统一管理依赖注入，消除所有页面冗余的 `viewModelFactory { initializer { ... } }` 样板代码。
+
+
 ## 1.4.6 · 2026-10-21
 
 versionCode 7；Room 数据库保持 v4，备份 Schema 保持 v3。

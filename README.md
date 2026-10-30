@@ -17,9 +17,9 @@
 所有数据存储于设备本地，无需注册账户，核心功能完全离线可用。
 
 <p align="center">
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk"><strong>📦 下载最新版 v1.4.6</strong></a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk"><strong>📦 下载最新版 v1.4.7</strong></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.6">版本说明</a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.7">版本说明</a>
   &nbsp;·&nbsp;
   <a href="./MAINTENANCE.md">维护指南</a>
   &nbsp;·&nbsp;
@@ -64,9 +64,9 @@
 | :--- | :--- |
 | 版本号 | **1.4.6**（versionCode 7） |
 | 系统要求 | Android 8.0（API 26）及以上 |
-| 安装包 | [`wedo-fitness-v1.4.6.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk)（约 2.2 MB） |
+| 安装包 | [`wedo-fitness-v1.4.6.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk)（约 2.2 MB） |
 | 应用包名 | `com.example.nutrition` |
-| SHA-256 校验 | [`wedo-fitness-v1.4.6.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk.sha256) |
+| SHA-256 校验 | [`wedo-fitness-v1.4.6.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk.sha256) |
 
 ### 安装说明
 
@@ -84,6 +84,13 @@
 ---
 
 ## 版本更新
+
+### v1.4.7 · 2026-10-30
+
+- 页面转场动效升级：引入 Material Motion 水平滑动进出动效体系，Tab 切换采用轻量淡入淡出。
+- 架构性能提升：周报按日期范围精确拉取数据库记录；食物模板过滤列表增加缓存；ViewModel 彻底解耦 UI 颜色。
+- 代码精炼与去重：统一 `DateNavigationBar` 组件、`formatNutrient` 格式化工具及 `appViewModelFactory` 工厂方法。
+
 
 ### v1.4.6 · 2026-10-21
 
@@ -229,7 +236,7 @@ Copyright © 2026 [Joshmax010](https://github.com/Joshmax010)
 
 All data is stored locally on the device. No account registration is required, and core features are fully functional offline.
 
-**[Download v1.4.6](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.6/wedo-fitness-v1.4.6.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.6)
+**[Download v1.4.6](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.7)
 
 ### What's New in v1.4.6
 
