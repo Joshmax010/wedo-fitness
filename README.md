@@ -17,9 +17,9 @@
 所有数据存储于设备本地，无需注册账户，核心功能完全离线可用。
 
 <p align="center">
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk"><strong>📦 下载最新版 v1.4.7</strong></a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk"><strong>📦 下载最新版 v0.2.1</strong></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.7">版本说明</a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.1">版本说明</a>
   &nbsp;·&nbsp;
   <a href="./MAINTENANCE.md">维护指南</a>
   &nbsp;·&nbsp;
@@ -62,11 +62,11 @@
 
 | 项目 | 详情 |
 | :--- | :--- |
-| 版本号 | **1.4.6**（versionCode 7） |
+| 版本号 | **0.2.1**（versionCode 9） |
 | 系统要求 | Android 8.0（API 26）及以上 |
-| 安装包 | [`wedo-fitness-v1.4.6.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk)（约 2.2 MB） |
+| 安装包 | [`wedo-fitness-v0.2.1.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk)（约 2.2 MB） |
 | 应用包名 | `com.example.nutrition` |
-| SHA-256 校验 | [`wedo-fitness-v1.4.6.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk.sha256) |
+| SHA-256 校验 | [`wedo-fitness-v0.2.1.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk.sha256) |
 
 ### 安装说明
 
@@ -84,6 +84,12 @@
 ---
 
 ## 版本更新
+
+### v0.2.1 · 2026-11-12
+
+- **交互体验精简**：移除所有主界面与二级页面标题下方的冗余小字副标题，视觉更简洁清爽。
+- **食物模板交互对齐**：食物模板标题支持与主页一致的滚动折叠动效（32sp → 20sp）；新增回到顶部 FAB 悬浮按钮（列表滚动后自动浮现）。
+- **版本号规范调整**：调整版本号为 `0.2.1`（Alpha/预览体验版阶段），明确当前仍处于持续演进与打磨阶段。
 
 ### v1.4.7 · 2026-10-30
 
@@ -236,14 +242,13 @@ Copyright © 2026 [Joshmax010](https://github.com/Joshmax010)
 
 All data is stored locally on the device. No account registration is required, and core features are fully functional offline.
 
-**[Download v1.4.6](https://github.com/Joshmax010/wedo-fitness/releases/download/v1.4.7/wedo-fitness-v1.4.7.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v1.4.7)
+**[Download v0.2.1](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.1)
 
-### What's New in v1.4.6
+### What's New in v0.2.1
 
-- **Unified secondary page layout**: Removed the redundant "‹ Back" button bar from secondary settings pages. Titles such as "Profile & Goals", "Data Management", and "About" are now displayed at the top with the same headline style used on root pages.
-- **Smooth collapsing animation**: Secondary page titles now support the same smooth scroll-to-collapse interaction as root pages (32sp → 20sp).
-- **System back gestures preserved**: Android system edge-swipe and gesture navigation remain fully functional.
-- **Repository link updated**: The WeDo button in the top bar now points to the `wedo-fitness` repository.
+- **Refined Typography**: Removed redundant subtitle text under page headlines across all screens for a cleaner, modern look.
+- **Enhanced Food Templates**: Added smooth collapsing title animation on scroll and a floating "scroll-to-top" FAB that appears after scrolling.
+- **Version Calibration**: Re-anchored version to `0.2.1` to reflect early preview status.
 
 ### Privacy
 

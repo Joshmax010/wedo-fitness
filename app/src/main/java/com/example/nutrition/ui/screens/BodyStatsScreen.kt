@@ -104,7 +104,7 @@ fun BodyStatsScreen(
                 .padding(com.example.nutrition.ui.navigation.LocalPageContentPadding.current)
                 .padding(16.dp)
         ) {
-            com.example.nutrition.ui.navigation.PageTitle("身体记录", "记录身体变化")
+            com.example.nutrition.ui.navigation.PageTitle("身体记录")
             uiState.dataError?.let { DataLoadError(it, viewModel::initialize) }
             uiState.dateError?.let { message -> DataLoadError(message) { viewModel.selectDate(uiState.selectedDate) } }
             // 图表

@@ -24,8 +24,8 @@ android {
         applicationId = "com.example.nutrition"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.4.7"
+        versionCode = 9
+        versionName = "0.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

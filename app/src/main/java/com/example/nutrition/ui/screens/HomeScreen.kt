@@ -119,7 +119,7 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item { com.example.nutrition.ui.navigation.PageTitle("总览", "查看当天的摄入与目标") }
+            item { com.example.nutrition.ui.navigation.PageTitle("总览") }
             uiState.dataError?.let { message ->
                 item { DataLoadError(message, viewModel::loadData) }
             }

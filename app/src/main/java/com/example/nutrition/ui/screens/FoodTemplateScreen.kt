@@ -62,6 +62,17 @@ import com.example.nutrition.ui.theme.TextPlaceholder
 import com.example.nutrition.ui.theme.TextPrimary
 import com.example.nutrition.ui.theme.TextSecondary
 import com.example.nutrition.viewmodel.FoodTemplateViewModel
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * 食物模板管理页
@@ -82,16 +93,24 @@ fun FoodTemplateScreen(
 
     ObserveUiEvents(viewModel.events, blocked = uiState.showAddDialog || uiState.showFilterDialog || uiState.deleteId != null)
 
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    com.example.nutrition.ui.navigation.TrackRootTitleScroll {
+        if (listState.firstVisibleItemIndex == 0) listState.firstVisibleItemScrollOffset.toFloat()
+        else Float.POSITIVE_INFINITY
+    }
+
     Box(Modifier.fillMaxSize().background(BgMain)) {
         val filtered = viewModel.filteredTemplates()
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = com.example.nutrition.ui.navigation.LocalPageContentPadding.current
         ) {
             item {
                 Column {
-                    com.example.nutrition.ui.navigation.PageTitle("食物模板", "熟悉的食物，更快地录入", modifier = Modifier.padding(horizontal = 16.dp)) {
+                    com.example.nutrition.ui.navigation.PageTitle("食物模板", modifier = Modifier.padding(horizontal = 16.dp)) {
                         androidx.compose.material3.IconButton(onClick = { viewModel.openAddDialog() }) {
                             Icon(Icons.Default.Add, contentDescription = "新增食物模板", tint = Primary)
                         }
@@ -121,6 +140,25 @@ fun FoodTemplateScreen(
                         onEdit = { viewModel.openEditDialog(template) },
                         onDelete = viewModel::requestDelete)
                 }
+            }
+        }
+
+        // 回到顶部按钮
+        AnimatedVisibility(
+            visible = listState.firstVisibleItemIndex > 2,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 24.dp)
+        ) {
+            FloatingActionButton(
+                onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } },
+                containerColor = Primary,
+                contentColor = com.example.nutrition.ui.theme.TextInverse,
+                elevation = FloatingActionButtonDefaults.elevation(4.dp)
+            ) {
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "回到顶部")
             }
         }
     }

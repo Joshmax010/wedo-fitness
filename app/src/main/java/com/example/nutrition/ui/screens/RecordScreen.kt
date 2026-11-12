@@ -137,7 +137,7 @@ fun RecordScreen(
                 .verticalScroll(scrollState)
                 .padding(com.example.nutrition.ui.navigation.LocalPageContentPadding.current)
         ) {
-            com.example.nutrition.ui.navigation.PageTitle("录入", "按餐记录，按克重换算", modifier = Modifier.padding(horizontal = 16.dp))
+            com.example.nutrition.ui.navigation.PageTitle("录入", modifier = Modifier.padding(horizontal = 16.dp))
             uiState.dataError?.let { DataLoadError(it, viewModel::loadData) }
             uiState.templateError?.let { DataLoadError(it, viewModel::loadData) }
             Column {

@@ -75,11 +75,11 @@ import com.example.nutrition.viewmodel.SettingsViewModel
  *
  * 每日营养目标表单 + 数据管理 + 关于 + 导入弹窗
  */
-enum class SettingsSection(val title: String, val subtitle: String) {
-    MAIN("设置", "管理目标、工具与本地数据"),
-    TARGETS("档案与目标", "身体档案与营养目标一起保存"),
-    DATA("数据管理", "本地数据由你管理"),
-    ABOUT("关于", "")
+enum class SettingsSection(val title: String) {
+    MAIN("设置"),
+    TARGETS("档案与目标"),
+    DATA("数据管理"),
+    ABOUT("关于")
 }
 
 @Composable
@@ -121,7 +121,7 @@ fun SettingsScreen(
                 .padding(com.example.nutrition.ui.navigation.LocalPageContentPadding.current)
                 .padding(horizontal = 16.dp)
         ) {
-            com.example.nutrition.ui.navigation.PageTitle(section.title, section.subtitle)
+            com.example.nutrition.ui.navigation.PageTitle(section.title)
             uiState.targetsError?.let { DataLoadError(it, viewModel::initialize) }
             Spacer(modifier = Modifier.height(8.dp))
 
