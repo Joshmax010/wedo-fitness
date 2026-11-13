@@ -21,24 +21,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF507755), onPrimary = Color.White,
-    primaryContainer = Color(0xFFE7EEE5), onPrimaryContainer = Color(0xFF355139),
-    secondary = Color(0xFF6575AB), tertiary = Color(0xFF946D2F),
-    error = Color(0xFFB36155), onError = Color.White,
-    background = Color.White, onBackground = Color(0xFF202124),
-    surface = Color(0xFFF5F5F7), onSurface = Color(0xFF202124),
-    surfaceVariant = Color(0xFFEBEBEE), onSurfaceVariant = Color(0xFF68686C),
-    outline = Color(0xFFB5B5BA), outlineVariant = Color(0xFFE5E5E8)
+    primary = Color(0xFF3D7A45),          // 更清透的森林绿（原 #507755 偏灰偏暗）
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFD4EDDA), // 更鲜活的浅绿容器
+    onPrimaryContainer = Color(0xFF1B4721),
+    secondary = Color(0xFF5C6BC0),        // 靛蓝（原 #6575AB 偏灰）
+    tertiary = Color(0xFFE6A817),         // 警告琥珀提亮（原 #946D2F 太暗）
+    error = Color(0xFFD14D41),            // 更标准的红（原 #B36155 偏土）
+    onError = Color.White,
+    background = Color(0xFFF5F6F8),       // ← 关键：背景改为浅灰
+    onBackground = Color(0xFF1A1C1E),
+    surface = Color.White,                // ← 关键：卡片改为纯白（浮起）
+    onSurface = Color(0xFF1A1C1E),
+    surfaceVariant = Color(0xFFEDEEF0),   // 输入框填充
+    onSurfaceVariant = Color(0xFF5F6368),
+    outline = Color(0xFFB0B3B8),
+    outlineVariant = Color(0xFFE0E2E6)
 )
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF9FBEA0), onPrimary = Color(0xFF141414),
-    primaryContainer = Color(0xFF303E31), onPrimaryContainer = Color(0xFFD6E6D5),
-    secondary = Color(0xFFA4AFE0), tertiary = Color(0xFFD0AB73),
-    error = Color(0xFFDE9789), onError = Color(0xFF141414),
-    background = Color(0xFF141414), onBackground = Color.White,
-    surface = Color(0xFF202020), onSurface = Color.White,
-    surfaceVariant = Color(0xFF2B2B2D), onSurfaceVariant = Color(0xFFB8B8BC),
-    outline = Color(0xFF737378), outlineVariant = Color(0xFF38383A)
+    primary = Color(0xFF8FD69A),          // 更鲜活的绿（原 #9FBEA0 太灰太淡）
+    onPrimary = Color(0xFF0F2818),
+    primaryContainer = Color(0xFF294D30),
+    onPrimaryContainer = Color(0xFFCAEED1),
+    secondary = Color(0xFFB0BEF0),
+    tertiary = Color(0xFFF0C05A),         // 警告金（原 #D0AB73 偏灰）
+    error = Color(0xFFEF8A80),            // 柔和错误红（原 #DE9789 偏桃）
+    onError = Color(0xFF1A0A08),
+    background = Color(0xFF111113),       // 底色微偏冷灰
+    onBackground = Color(0xFFE5E6EA),
+    surface = Color(0xFF1E1F23),          // ← 卡片提亮到可辨识程度
+    onSurface = Color(0xFFE5E6EA),
+    surfaceVariant = Color(0xFF2A2B30),   // 输入框填充
+    onSurfaceVariant = Color(0xFFB5B7BD),
+    outline = Color(0xFF6E7078),
+    outlineVariant = Color(0xFF35363B)
 )
 
 @Composable
@@ -54,7 +70,10 @@ fun NutritionTheme(content: @Composable () -> Unit) {
     DisposableEffect(context, dark) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { dark },
-            navigationBarStyle = SystemBarStyle.auto(AndroidColor.WHITE, 0xFF141414.toInt()) { dark }
+            navigationBarStyle = SystemBarStyle.auto(
+                AndroidColor.parseColor("#F5F6F8"),
+                AndroidColor.parseColor("#111113")
+            ) { dark }
         )
         onDispose { }
     }
@@ -62,7 +81,7 @@ fun NutritionTheme(content: @Composable () -> Unit) {
         MaterialTheme(
             colorScheme = colors,
             typography = AppTypography,
-            shapes = Shapes(medium = RoundedCornerShape(12.dp), large = RoundedCornerShape(20.dp))
+            shapes = Shapes(medium = RoundedCornerShape(14.dp), large = RoundedCornerShape(20.dp))
         ) {
             CompositionLocalProvider(LocalContentColor provides colors.onBackground, content = content)
         }

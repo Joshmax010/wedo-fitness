@@ -146,7 +146,7 @@ fun SettingsScreen(
                 SettingsSection.ABOUT -> AboutCard(viewModel, uiState)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
 
         if (showAppearance) {
@@ -205,7 +205,7 @@ private fun SettingsMenuCard(title: String, content: @Composable () -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(Modifier.padding(16.dp)) { SectionTitle(title); content() }
     }
@@ -238,7 +238,7 @@ private fun TargetsCard(viewModel: SettingsViewModel, uiState: SettingsViewModel
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle("每日营养目标")
@@ -311,7 +311,7 @@ private fun FeaturesCard(
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle("记录工具")
@@ -342,7 +342,7 @@ private fun DataManagementCard(viewModel: SettingsViewModel) {
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle("数据管理")
@@ -377,7 +377,7 @@ private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.U
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle("关于")
@@ -721,7 +721,7 @@ private fun BodyProfileCard(viewModel: SettingsViewModel, uiState: SettingsViewM
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle("身体档案")

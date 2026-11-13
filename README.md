@@ -17,9 +17,9 @@
 所有数据存储于设备本地，无需注册账户，核心功能完全离线可用。
 
 <p align="center">
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk"><strong>📦 下载最新版 v0.2.1</strong></a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk"><strong>📦 下载最新版 v0.2.2</strong></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.1">版本说明</a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.2">版本说明</a>
   &nbsp;·&nbsp;
   <a href="./MAINTENANCE.md">维护指南</a>
   &nbsp;·&nbsp;
@@ -62,11 +62,11 @@
 
 | 项目 | 详情 |
 | :--- | :--- |
-| 版本号 | **0.2.1**（versionCode 9） |
+| 版本号 | **0.2.2**（versionCode 10） |
 | 系统要求 | Android 8.0（API 26）及以上 |
-| 安装包 | [`wedo-fitness-v0.2.1.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk)（约 2.2 MB） |
+| 安装包 | [`wedo-fitness-v0.2.2.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk)（约 2.2 MB） |
 | 应用包名 | `com.example.nutrition` |
-| SHA-256 校验 | [`wedo-fitness-v0.2.1.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk.sha256) |
+| SHA-256 校验 | [`wedo-fitness-v0.2.2.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk.sha256) |
 
 ### 安装说明
 
@@ -84,6 +84,15 @@
 ---
 
 ## 版本更新
+
+### v0.2.2 · 2026-11-12
+
+- **卡片浮雕与配色体系升级**：浅色背景重构为温润灰（`#F5F6F8`），卡片提升为纯白（`#FFFFFF`）并赋予轻微 `1.dp` 环境光阴影，彻底消除卡片下陷感；深色模式拉开层级对比。
+- **鲜活营养色谱**：蛋白质（`#5B8DEF` 靛蓝）、脂肪（`#EFA030` 暖橙）、碳水（`#41B876` 翠绿）采用高饱和鲜活调性，宏量比例一目了然。
+- **流体圆角胶囊 Tab**：录入页面餐次切换升级为包裹式圆角滑块胶囊（Pill Tab），滑动切换更具质感。
+- **空状态矢量图标化**：移除主页与周报页 Emoji，采用精致 Material Icons，录入按钮圆角优化至 12dp。
+- **空间呼吸感优化**：首页卡片间距拉伸至 16dp；设置页底部增加 80dp 留白避免导航栏遮挡。
+- **触感微交互**：餐次卡片引入 Spring 阻尼物理弹性回弹。
 
 ### v0.2.1 · 2026-11-12
 
@@ -215,7 +224,15 @@ Copyright © 2026 [Joshmax010](https://github.com/Joshmax010)
 
 All data is stored locally on the device. No account registration is required, and core features are fully functional offline.
 
-**[Download v0.2.1](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.1/wedo-fitness-v0.2.1.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.1)
+**[Download v0.2.2](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.2)
+
+### What's New in v0.2.2
+
+- **Aesthetic Revamp**: Implemented subtle floating card architecture with warm ivory background (`#F5F6F8`) and pure white cards with soft `1.dp` ambient elevation.
+- **Vibrant Nutrient Palette**: Re-tuned protein (blue `#5B8DEF`), fat (amber `#EFA030`), and carbs (emerald `#41B876`) for immediate at-a-glance recognition.
+- **Fluid Pill Tabs**: Redesigned meal selector in record screen into modern rounded pill slider tabs.
+- **Vector Empty States**: Replaced system emoji empty states with clean Material Design vector iconography.
+- **Spring Haptics**: Added spring damping physics to meal card interactions.
 
 ### What's New in v0.2.1
 

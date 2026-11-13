@@ -20,8 +20,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FoodBank
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import com.example.nutrition.ui.components.DataLoadError
 import androidx.compose.runtime.Composable
@@ -117,7 +120,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { com.example.nutrition.ui.navigation.PageTitle("总览") }
             uiState.dataError?.let { message ->
@@ -352,25 +355,31 @@ private fun EmptyState(onRecord: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "\uD83C\uDF7D\uFE0F", fontSize = 48.sp)
-        Spacer(modifier = Modifier.height(12.dp))
+        Icon(
+            imageVector = Icons.Outlined.FoodBank,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = TextPlaceholder
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "这一天还没有饮食记录",
             fontSize = 16.sp,
             color = TextPlaceholder
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "点击下方按钮开始录入第一餐",
             fontSize = 12.sp,
             color = TextPlaceholder
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .background(Primary)
                 .clickable(onClick = onRecord)
-                .padding(horizontal = 32.dp, vertical = 10.dp)
+                .padding(horizontal = 36.dp, vertical = 12.dp)
         ) {
             Text(
                 text = "+ 录入",
@@ -439,7 +448,7 @@ private fun DashboardCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             if (title != null) {

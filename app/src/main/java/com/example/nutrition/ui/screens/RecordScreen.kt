@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +36,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import com.example.nutrition.ui.theme.nutritionFieldColors
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Tab
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import com.example.nutrition.ui.components.DataLoadError
@@ -69,6 +72,7 @@ import com.example.nutrition.ui.components.DateNavigationBar
 import com.example.nutrition.ui.components.RecordItem
 import com.example.nutrition.ui.theme.BgCard
 import com.example.nutrition.ui.theme.BgMain
+import com.example.nutrition.ui.theme.BgTag
 import com.example.nutrition.ui.theme.Error
 import com.example.nutrition.ui.theme.Primary
 import com.example.nutrition.ui.theme.TextPrimary
@@ -406,27 +410,33 @@ private fun MealTabs(
     currentMeal: MealKey,
     onMealSelected: (MealKey) -> Unit
 ) {
-    val tabIndex = MealKey.entries.indexOf(currentMeal).coerceAtLeast(0)
-
-    TabRow(
-        selectedTabIndex = tabIndex,
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = BgCard,
-        contentColor = Primary,
-        divider = {}
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(BgTag)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         MealKey.entries.forEach { meal ->
-            Tab(
-                selected = meal == currentMeal,
-                onClick = { onMealSelected(meal) },
-                text = {
-                    Text(
-                        text = meal.displayName,
-                        fontWeight = if (meal == currentMeal) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 15.sp
-                    )
-                }
-            )
+            val isSelected = meal == currentMeal
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isSelected) BgCard else Color.Transparent)
+                    .clickable { onMealSelected(meal) }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = meal.displayName,
+                    fontSize = 14.sp,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isSelected) TextPrimary else TextSecondary
+                )
+            }
         }
     }
 }
@@ -515,7 +525,7 @@ private fun FormCard(
             .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // 标题

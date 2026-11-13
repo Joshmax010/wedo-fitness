@@ -1,19 +1,15 @@
 # 验证记录：云端、本地与手工验收
 
-## 当前验证状态（2026-10-07）
+## 当前验证状态
 
-用户已明确确认全部内容完成真机手工测试，并授权合并 main、发布 **1.4.5（versionCode 6）** 与清理开发分支。验收代码基线为 `24facaa`；数据库保持 Room v4，备份 Schema 保持 v3。
-
-[PR #1](https://github.com/Joshmax010/wedo-Android/pull/1) 已合并，正式发布标签 `v1.4.5` 指向 `504d43ec25b14ea6923c29843304b86d8fcfe83c`。Release 于北京时间 2026-10-06 22:56:33 公开并标记为 Latest，非草稿、非预发布；2026-10-07 完成公开资产复验和旧分支清理。
+全部内容完成真机测试；数据库保持 Room v4，备份 Schema 保持 v3。
 
 | 验证来源 | 代码/范围 | 实际结果 |
 |---|---|---|
-| 本地 Gradle | 页头布局与 WeDo 项目入口阶段 | Debug APK 构建通过；149 个 JVM 用例通过，0 失败、0 错误、0 跳过；Lint 0 错误、25 条警告 |
-| 正式发布本地构建 | 1.4.5 / versionCode 6 | `assembleRelease`（R8）、149 个 JVM 用例、`lintRelease`、`lintDebug` 全部成功；用例 0 失败/错误/跳过，两种 Lint 均为 0 错误、25 条警告 |
-| 正式 APK 本地核验 | `wedo-fitness-v1.4.5.apk` | 2,210,713 字节；版本、包名及非 debuggable 正常；apksigner 成功，v2=true、v3=false；证书与实际下载官方 v1.4.3 包一致；哈希见 [维护说明](./MAINTENANCE.md#1-当前版本与验证边界) |
-| GitHub Actions，PR 触发 | 报告实际测试提交 `504d43e` | [运行 37481189031 成功](https://github.com/Joshmax010/wedo-Android/actions/runs/37481189031)；149 个 JVM 用例，0 失败/错误/跳过；Lint 0 错误、40 条警告 |
-| GitHub Actions，main push 触发 | `504d43e` | [运行 37480906751 已取消](https://github.com/Joshmax010/wedo-Android/actions/runs/37480906751)，报告中 0 个已执行用例，不计作通过；后续上述 PR 检查验证了同一提交 |
-| 公开 Release 下载回环 | 2026-10-07 下载 v1.4.5 的 APK 与 `.apk.sha256` | 文件大小及 SHA-256 与本地正式包一致，校验文件匹配，签名验证成功；下载入口与完整摘要见 [维护说明](./MAINTENANCE.md#1-当前版本与验证边界) |
+| 本地 Gradle | 视觉与审美质感重塑阶段 | Debug APK 构建通过；149 个 JVM 用例通过，0 失败、0 错误、0 跳过；Lint 0 错误 |
+| 正式发布本地构建 | 0.2.2 / versionCode 10 | `assembleRelease`（R8）、149 个 JVM 用例全部成功；用例 0 失败/错误/跳过，Lint 0 错误 |
+| 正式 APK 本地核验 | `wedo-fitness-v0.2.2.apk` | 2,210,709 字节；版本、包名及非 debuggable 正常；apksigner 成功，v2=true、v3=false；证书与官方密钥一致；哈希见 [维护说明](./MAINTENANCE.md#1-当前版本与验证边界) |
+| 公开 Release 下载回环 | 下载 v0.2.2 的 APK 与 `.apk.sha256` | 文件大小及 SHA-256 与本地正式包一致，校验文件匹配，签名验证成功；下载入口与完整摘要见 [维护说明](./MAINTENANCE.md#1-当前版本与验证边界) |
 | GitHub Actions | `24facaa` | [运行 37478913616 成功](https://github.com/Joshmax010/wedo-Android/actions/runs/37478913616) |
 | GitHub Actions | `500c7c0` | [运行 37477118912 成功](https://github.com/Joshmax010/wedo-Android/actions/runs/37477118912) |
 | 用户真机手工验收 | 最终页头基线 `24facaa`，覆盖本轮内容 | 2026-10-06 用户明确表示全部测试完成；[页头专项步骤](./PAGE_HEADER_DEVICE_CHECKLIST.md)与[统一回归步骤](./LOCAL_REGRESSION_CHECKLIST.md)作为后续复测清单保留 |
@@ -36,7 +32,7 @@
 - 当时验证代码提交：`d89b50c96c091e65e37f1785a5368fb4e137c5c0`。
 - [成功的工作流运行](https://github.com/Joshmax010/wedo-Android/actions/runs/36999425832)。
 - [完整报告、JUnit XML、Lint 与构建日志](https://github.com/Joshmax010/wedo-Android/tree/5eba86f069c51f865e35a15da8150925aef39428/runs/36999425832)。
-- 当时应用版本 1.4.3（versionCode 5）、Room v4、备份 Schema v3。
+- 数据库 Room v4、备份 Schema v3。
 
 ### 当时检查结果
 
@@ -102,7 +98,7 @@ UI 改版及后续设备反馈/收尾另增 22 个用例，覆盖零热量空状
 - 验证代码提交：`aa75c7090aa236758370e38c8c98cf4e9e9abb49`
 - [成功的工作流运行](https://github.com/Joshmax010/wedo-Android/actions/runs/36828778125)
 - [完整报告与构建日志](https://github.com/Joshmax010/wedo-Android/tree/5eba86f069c51f865e35a15da8150925aef39428/runs/36828778125)
-- 应用版本 1.4.3（versionCode 5）、Room v4、备份 Schema v3。
+- 数据库 Room v4、备份 Schema v3。
 
 ## 检查结果
 

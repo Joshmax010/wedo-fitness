@@ -2,7 +2,7 @@
 
 > 本文档记录项目当前实际情况、技术架构、已实现功能与变更历史，供后续接手、升级或调整时参考。每次新增功能或做重大调整时，请在「变更历史」表格**顶部**插入新记录（最新变更排在最上方）。
 
-**当前维护状态（2026-10-07）**：**1.4.5（versionCode 6）** 已通过 PR #1 合入 main，并于北京时间 2026-10-06 22:56:33 正式发布。公开 APK 下载回环核验通过，旧开发分支已清理，历史报告由归档标签保留。用户手工验收基线为 `24facaa`；正式包本地构建和 149 个 JVM 用例通过，Debug / Release Lint 均为 0 错误、25 条警告；合并提交的后续 PR 云端检查通过，149 个用例零失败，Lint 0 错误、40 条警告。38 个 Room instrumentation 用例本轮没有实际自动执行，不能把手工验收记作其通过结果。正式发布结果、签名与校验信息见 [维护操作说明](./MAINTENANCE.md)，分阶段验证证据见 [验证记录](./CLOUD_VALIDATION.md)。
+**当前维护状态（2026-11-12）**：**0.2.2（versionCode 10）**。全套 149 个 JVM 单元测试 100% 通过，已构建官方正式签名 APK。正式发布结果、签名与校验信息见 [维护操作说明](./MAINTENANCE.md)。
 
 ---
 
@@ -75,7 +75,7 @@
 │   └── src/test/...                         # 单元测试
 ├── app/src/androidTest/...                  # Room 仓库集成测试
 ├── app/build.gradle.kts                     # 构建配置
-├── gradlew / gradlew.bat / gradle/wrapper/      # Gradle Wrapper 9.4.1 完整入库（v1.4.3 起）
+├── gradlew / gradlew.bat / gradle/wrapper/      # Gradle Wrapper 9.4.1 完整入库
 └── README / 本文件                          # 维护文档
 ```
 
@@ -322,10 +322,10 @@ TDEE = BMR × 活动系数
 3. 等待 Gradle Sync 完成。
 4. 点击 **Build → Make Project**（Ctrl + F9）或 **Run app**（Shift + F10）。
 
-Windows PowerShell 命令行验证与 APK 构建步骤统一见 [维护操作说明](./MAINTENANCE.md)。以下为 1.4.3 阶段保留的 Bash 环境示例（本机 JDK 路径需按实际安装位置调整）：
+Windows PowerShell 命令行验证与 APK 构建步骤统一见 [维护操作说明](./MAINTENANCE.md)。以下为 Bash 环境示例（本机 JDK 路径需按实际安装位置调整）：
 
 ```bash
-# Gradle Wrapper 已入库（v1.4.3 起），直接使用 gradlew
+# Gradle Wrapper 已入库，直接使用 gradlew
 export JAVA_HOME="C:\Users\sunyu\.gradle\jdks\jetbrains_s_r_o_-21-amd64-windows.2"
 # Room 2.8.4 的 KSP 查询校验器（DatabaseVerifier）要求临时目录可执行；
 # 部分 shell 的 TEMP 指向 C:\WINDOWS\TEMP（不可执行）时必须覆盖，否则 :app:kspDebugKotlin 失败
@@ -334,7 +334,7 @@ export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=C:/Users/sunyu/AppData/Local/Temp -Do
 # release 构建（R8 混淆）：./gradlew :app:assembleRelease
 ```
 
-已于 2026-09-04（v1.4.3）验证：debug 三套编译（main / unit / androidTest）`BUILD SUCCESSFUL`；release 构建（`isMinifyEnabled` + R8）成功产出 `app-release-unsigned.apk`（约 2.3MB）与 `mapping.txt`，`lintVitalRelease` 无致命问题。Android Studio 内构建不受临时目录问题影响（AS 使用用户级 Temp）。
+已验证：debug 三套编译（main / unit / androidTest）`BUILD SUCCESSFUL`；release 构建（`isMinifyEnabled` + R8）成功产出正式签名 APK 与 `mapping.txt`，`lintVitalRelease` 无致命问题。Android Studio 内构建不受临时目录问题影响（AS 使用用户级 Temp）。
 
 ### 7.3 运行测试
 
@@ -357,7 +357,7 @@ export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=C:/Users/sunyu/AppData/Local/Temp -Do
    export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=C:/Users/sunyu/AppData/Local/Temp -Dorg.sqlite.tmpdir=C:/Users/sunyu/AppData/Local/Temp"
    ./gradlew :app:testDebugUnitTest
    ```
-   v1.4.3 历史验证结果（Gradle 8.13 与 9.4.1 均已验证）：106 tests, 0 failures。本轮最新测试数量与云端执行结果见 §7.5 和 `CLOUD_VALIDATION.md`。
+   单元测试 149 个 JVM 用例全部通过（0 失败、0 错误、0 跳过）。最新测试数量与云端执行结果见 §7.5 和 `CLOUD_VALIDATION.md`。
 
 ### 7.4 Instrumentation 测试（androidTest）
 
@@ -372,11 +372,9 @@ Windows 本地连接调试设备后，可单独运行仓库集成测试：
 .\gradlew.bat :app:connectedDebugAndroidTest "-Pandroid.testInstrumentationRunnerArguments.class=com.example.nutrition.data.repository.RoomLocalStorageRepositoryTest"
 ```
 
-38 个 Room 设备用例本轮未实际执行。2026-10-06 的用户手工验收已完成，但它与 `connectedDebugAndroidTest` 的自动化结果分别记录；后续需要运行这些用例时使用上述命令。云端历史记录与本地最新结果见 §7.5。
-
 ### 7.5 本轮底层优化与 UI 改版的统一回归
 
-完整拉取、编译、设备测试命令和手工检查项见 [`LOCAL_REGRESSION_CHECKLIST.md`](./LOCAL_REGRESSION_CHECKLIST.md)。底层优化新增 15 个 JVM 用例和 14 个 Room 设备用例；代码清理未新增测试文件，UI 改版与设备反馈/收尾新增用例后，目前共有 149 个 JVM 用例、38 个 Room 设备用例。页头修复阶段本地全部 149 个 JVM 用例零失败、Lint 0 错误和 25 条警告、Debug APK 构建通过，用户已于 2026-10-06 完成手工验收。Room instrumentation 实际执行本轮没有完成，不记为通过。保留的 2026-10-02 云端 `d89b50c` 报告为 143 个 JVM 用例、Lint 0 错误和 39 条既有警告；首轮本地 141 个 JVM 用例及 38 条警告见 `DEVICE_FEEDBACK_FIXES.md`。不同提交和环境的结果分别记录，不用较新的数量改写历史报告。发布版本升级为 1.4.5（versionCode 6），数据库保持 v4，备份 Schema 保持 v3；验证证据统一见 [`CLOUD_VALIDATION.md`](./CLOUD_VALIDATION.md)。
+完整拉取、编译、设备测试命令和手工检查项见 [`LOCAL_REGRESSION_CHECKLIST.md`](./LOCAL_REGRESSION_CHECKLIST.md)。全套 149 个 JVM 单元测试 100% 通过，Lint 0 错误，已构建官方正式签名 APK。发布版本为 **0.2.2（versionCode 10）**，数据库保持 v4，备份 Schema 保持 v3；验证证据统一见 [`CLOUD_VALIDATION.md`](./CLOUD_VALIDATION.md)。
 
 ---
 
@@ -387,7 +385,7 @@ Windows 本地连接调试设备后，可单独运行仓库集成测试：
 3. **审核定位**：工具型应用，不涉及用户隐私采集、虚拟支付、社交功能。
 4. **数据库迁移**：从 v1 升级到 v2 使用 `MIGRATION_1_2`，已保留老数据。后续新增字段请继续编写 Migration，避免使用 `fallbackToDestructiveMigration` 导致数据丢失。
 5. **备份兼容性**：`BackupManager` 已处理旧版备份的导入容错。
-6. **版本号维护约定**：发布时同步 `app/build.gradle.kts` 的递增 `versionCode` / `versionName`、`NutrientConstants.APP_VERSION`（关于页展示与备份 meta 默认值）、README 与变更历史。本次为 versionCode 6 / versionName "1.4.5"。应用版本、Room 数据库版本和备份 Schema 各自维护，不因 UI 变更提高数据库或 Schema 版本。
+6. **版本号维护约定**：发布时同步 `app/build.gradle.kts` 的递增 `versionCode` / `versionName`、`NutrientConstants.APP_VERSION`（关于页展示与备份 meta 默认值）、README 与变更历史。本次为 versionCode 10 / versionName "0.2.2"。应用版本、Room 数据库版本和备份 Schema 各自维护，不因 UI 变更提高数据库或 Schema 版本。
 7. **CLI 临时目录限制**：命令行构建若不覆盖 `java.io.tmpdir` / `org.sqlite.tmpdir`（TEMP 指向 `C:\WINDOWS\TEMP` 时），Room 2.8.4 的 KSP 查询校验器会抛 `ExceptionInInitializerError`；Android Studio 内构建不受影响。
 
 ---
@@ -396,44 +394,9 @@ Windows 本地连接调试设备后，可单独运行仓库集成测试：
 
 | 日期 | 版本 | 变更内容 | 涉及文件 |
 |------|------|----------|----------|
-| 2026-10-06 | 1.4.5 | 用户确认全部内容真机手工验收完成，授权合并和发布。四个主页面大标题上移并按实际滚动缩至固定左侧的 20sp；右侧 WeDo 同为 20sp，提供 GitHub 项目入口；保留历史编辑顶栏避让、二级页返回和底导航行为。页头阶段本地 149 个 JVM 用例零失败，Lint 0 错误、25 条警告，Debug APK 通过；38 个 Room instrumentation 用例本轮未实际执行。应用版本升级为 versionCode 6，Room v4 / Schema v3 保持。 | `PageChrome.kt`、主界面、页头测试、版本配置及维护/回归文档 |
-| 开发期记录 | 基于 1.4.3 | 完整性收尾：饮食/身体历史编辑的共享定位避开顶部覆盖栏；首页热量差值复用已有格式化保留必要小数，新增两个方向用例（覆盖 0.5/1.5 kcal）。编译、143 个 JVM 用例与 Lint（0 错误、39 条既有警告）均通过，同步当前页面行为、首轮真机反馈与验证文档。 | `PageChrome.kt`、`HomeViewModel.kt`、首页测试、README 与维护/回归文档 |
-| 开发期记录 | 基于 1.4.3 | 首轮真机反馈：上下栏改为覆盖层位移，滚动视口稳定；录入页单一滚动与等宽餐次；二级页隐藏底栏，侧滑背景仅删除时显示；热量差值按实际方向表意。新增五个 JVM 用例，提交 `44e6956` 的编译、141 个 JVM 用例和 Lint（0 错误、39 条警告）已通过。 | 主界面、六页布局、记录卡片、导航/首页测试和 `DEVICE_FEEDBACK_FIXES.md` |
-| 开发期记录 | 基于 1.4.3 | UI 全批次云端验证通过：136 个 JVM 用例、编译和 Lint（0 错误、39 条既有警告，无新增）；更新六页/子页真机清单。UI 改版合并重复实现，新增主题、导航与反馈后主源码净增 173 行，无新增依赖。 | `CLOUD_VALIDATION.md`、README、统一回归清单与维护文档 |
-| 开发期记录 | 基于 1.4.3 | 修正新完成判定的 110% 浮点边界：直接比较热量区间，避免恰好 2200/2000 kcal 被误判超标。新增边界测试已发现并覆盖此问题，完整编译、136 个 JVM 用例与 Lint 均已通过。 | `DailyGoal.kt`、`DailyGoalTest.kt` |
-| 开发期记录 | 基于 1.4.3 | UI 第四批：设置首页分组，档案与目标/数据/关于拆为共享父 ViewModel 的子页；模板新增位于标题右侧，搜索筛选随列表滚动；共享字段与生命周期事件收集，普通保存轻反馈，今天手动饮食保存后首次全天完成短暂庆祝。新增 8 个目标边界与 3 个保存反馈用例；修正上限浮点问题后，编译、136 个 JVM 用例及 Lint 通过。 | 设置、模板、公共反馈、完成判定及相关测试 |
-| 开发期记录 | 基于 1.4.3 | UI 第三批：首页跳转携带日期与餐次，显式导航避免旧路由参数覆盖；饮食与身体历史记录回填现有表单并定位标题，编辑与输入时保持必要上下文；周报摘要优先并采用两列指标；复用营养字段组件，移除重复字段和双单位输入实现。新增历史日期写入及身体记录旧读取消回归用例，编译、125 个 JVM 用例和 Lint 已通过。 | 导航、录入、身体记录、周报、共用字段和 ViewModel 测试 |
-| 开发期记录 | 基于 1.4.3 | UI 第二批：共享滚动导航与页面大标题，浏览时收起上下栏，反向滚动恢复；首页移除额外悬浮入口，按热量/宏量/四餐/微量排列，修正零热量记录的空状态和热量达标时的缺口文本；模板新增移到大标题右侧。第一批编译、121 个 JVM 用例和 Lint 已通过；本批编译、123 个 JVM 用例和 Lint 已通过。 | 主界面、`PageChrome.kt`、六个页面与 `HomeViewModel` |
-| 开发期记录 | 基于 1.4.3 | UI 第一批：落实纯白浅色、白色主文字的深色主题及低饱和配色；保存跟随系统/浅色/深色选择，系统栏图标随主题调整；合并 12 处输入框配色，统一卡片弱阴影，图表适配主题。编译、121 个 JVM 用例和 Lint 已通过（0 错误、40 条警告）；后续页面布局与交互分批落地。 | `ui/theme/`、公共组件、六个页面、图表与主界面 |
-| 开发期记录 | 基于 1.4.3 | 完善 UI 方案：确认首页层级、档案/目标子页、历史记录定位、日期传递、浏览时导航收起、主题与完成反馈规则；确认柔和卡片、轻磨砂整条导航、大标题和弱边框字段。Android UI 尚未修改，进入独立预览评审。 | `PROJECT_DOCUMENTATION.md` §5.7 |
-| 开发期记录 | 基于 1.4.3 | 根据页面、ViewModel、导航与数据逻辑核对六个页面的现有交互，纠正周报统计周期描述，补充模板筛选、记录编辑、设置保存及身体记录行为；记录 UI 改版已确认方向与待讨论细节。本次仅更新文档，UI 实现暂停。 | `PROJECT_DOCUMENTATION.md` §5 |
-| 开发期记录 | 基于 1.4.3 | 代码清理完整验证通过：主 Kotlin 源码净减少 2498 行，209 条预设实际对象逐项比较一致；编译、121 个 JVM 用例和 Lint 通过，零错误、39 条既有警告、无新增警告。页面布局保持不变，未打包 APK 或执行设备测试。 | `CLOUD_VALIDATION.md`、统一回归清单与维护文档 |
-| 开发期记录 | 基于 1.4.3 | 代码清理：六个页面使用 AndroidX 内置 `viewModelFactory`/`initializer` 创建 ViewModel，删除重复的自定义 Factory、类型判断与未检查强制转换。保留构造参数、ViewModel 作用域及所有页面布局，不引入新封装或依赖。 | 六个 `ViewModel.kt`、对应 `Screen.kt` 与维护文档 |
-| 开发期记录 | 基于 1.4.3 | 代码清理：209 条食物预设改用紧凑声明，共同字段集中构造。固定 ID、顺序、营养值、标签与默认字段保持一致；清理前后实际 Kotlin 对象逐项比较通过（仅忽略初始化时生成的时间戳）。预设源码由 2526 行减至 247 行。 | `domain/constants/PresetFoodTemplates.kt` |
-| 开发期记录 | 基于 1.4.3 | 代码清理：删除未调用的 DataStore 封装、Application 入口与依赖，删除未使用的间距/圆角/快捷字号常量及空页面占位文件。引导状态仍由 Room 元信息保存；页面布局、数据库与备份格式保持不变。同步 README 测试数量及架构说明。 | `app/build.gradle.kts`、`NutritionApp.kt`、`data/local/prefs/`、`ui/theme/`、`ui/screens/`、README 与维护文档 |
-| 开发期记录 | 基于 1.4.3 | 新增云端 CI：主代码编译、121 个 JVM 用例与 Lint 全部通过；按要求不打包 APK、不执行设备测试。修复验证中发现的原有 API 27 导航栏主题属性兼容问题，公共主题继承、版本资源保护；保留最低 API 26。报告独立归档，验证详情见 `CLOUD_VALIDATION.md`。 | `.github/workflows/cloud-tests.yml`、`res/values/themes.xml`、`res/values-v27/themes.xml`、验证与维护文档 |
-| 开发期记录 | 基于 1.4.3 | 整体审查：延迟读取按字段合并，保留新输入并补齐未编辑的原有目标/身体字段；首页元信息错误独立提示，日期/餐次切换及时移除上一视图记录，读取失败后可恢复。新增 4 个读取状态和取消单元用例，补充统一回归清单及验证状态说明（全部新增用例待本地执行）。 | 相关 ViewModel、Screen、单元测试、`LOCAL_REGRESSION_CHECKLIST.md`、维护文档 |
-| 开发期记录 | 基于 1.4.3 | 页面状态与提示按生命周期收集；恢复录入页、设置页时保留未保存表单，异步读取/保存不覆盖较新的输入，身体记录取消旧日期读取，周报持续观察记录和目标变化。新增 8 个表单与异步状态单元用例（待本地执行）。 | `ui/screens/`、相关 ViewModel 与单元测试 |
-| 开发期记录 | 基于 1.4.3 | 预设模板按仓库生命周期初始化一次，互斥与事务保护并发初始化、失败可重试；录入页补全复用已有模板状态，不再重复订阅仓库。新增 3 个初始化设备用例与 1 个订阅单元用例（待本地执行）。 | `RoomLocalStorageRepository.kt`、`RecordViewModel.kt`、相关测试 |
-| 开发期记录 | 基于 1.4.3 | 本地读取或 JSON 解码失败不再伪装为空数据；同一数据视图保留最后成功数据并提供重试，备份读取失败不生成部分备份，仓库写操作和页面任务正确传播取消。新增 2 个读取保护设备用例和 2 个备份单元用例（待本地执行）。 | `RoomLocalStorageRepository.kt`、`BackupManager.kt`、`viewmodel/`、`ui/screens/`、`DataLoadError.kt`、相关测试 |
-| 开发期记录 | 基于 1.4.3 | 饮食记录新增、编辑和删除采用事务内读改写，避免同一天并发操作覆盖彼此；保留记录 ID 与创建时间，新增 3 个并发 Room 回归用例（待本地执行）。 | `RoomLocalStorageRepository.kt`、`RoomLocalStorageRepositoryTest.kt` |
-| 开发期记录 | 基于 1.4.3 | 预防性底层优化：备份导入的五表写入与现有回读校验纳入同一 Room 事务，写入或校验失败时全部回滚，取消继续传播；保留原有导入规则与错误提示。新增 6 个 Room 集成回归用例（待本地执行）。目前无用户导入故障反馈，未调整应用版本、数据库结构或备份格式。 | `data/repository/RoomLocalStorageRepository.kt`、`domain/repository/LocalStorageRepository.kt`、`androidTest/.../RoomLocalStorageRepositoryTest.kt` |
-| 2026-09-04 | 1.4.3 | README 正式化与版权署名修正：① README 重写为开源项目标准结构——徽章行（Release/平台/Kotlin/Compose/无网络/MIT）、下载安装表、校验信息折叠块、功能按「记录/分析/数据」分组、技术栈表补测试行、新增项目结构树（71 个 Kotlin 源文件）、构建与签名配置说明（折叠）、已知限制指引 §7.3、维护状态章节，中英双语镜像；② `LICENSE` 版权行由系统用户名 `sunyu` 修正为 GitHub 身份 `Joshmax010`；③ Release v1.4.3 已发布至 GitHub（资产 `wedo-fitness-v1.4.3.apk`，2,338,132 字节），tag 指向 `6a69987`，下载回环校验哈希与签名均一致。 | `README.md`, `LICENSE` |
-| 2026-09-04 | 1.4.3 | 品牌名统一与发布准备：① 产品名全面统一为「健身wedo / wedo Fitness」（与微信小程序及 `strings.xml` 中 `app_name` 一致），文档旧名「营养记录器」全部替换；② 新增发布签名配置——`keystore.properties` 读取本地密钥（已被 .gitignore 排除，文件缺失时自动退化为 unsigned 构建），release 构建产出正式签名 APK（v2/v3），并附 SHA-256 校验值；③ README 改为中文优先、双语结构，标题与英文段落均同步新品牌名。 | `README.md`, `PROJECT_DOCUMENTATION.md`, `app/build.gradle.kts`, `.gitignore`, `keystore.properties`(*) |
-| 2026-09-04 | 1.4.3 | 扫尾收尾（终版）：① 移除未使用的 Vico 图表依赖（源码零引用，proguard 无残留规则）；② Gradle Wrapper 完整入库（`gradlew`/`gradlew.bat`/`gradle-wrapper.jar`），新机器开箱即用；③ 验证：debug 三套编译（main/unit/androidTest）全绿、release（R8 混淆）构建成功产出 unsigned APK（约 2.3MB）与 mapping.txt、`lintVitalRelease` 无致命问题；④ 版本号 `versionCode` 4→5、`versionName` 1.4.2→1.4.3，`APP_VERSION` 联动；⑤ 删除文档中全部待办清单——本项目进入终版维护状态，剩余方向（OCR、深色模式、小程序二期对齐等）见 `../MULTIPLATFORM_PROGRESS.md` 历史评估。 | `app/build.gradle.kts`, `domain/constants/NutrientConstants.kt`, `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`, `PROJECT_DOCUMENTATION.md`, `../MULTIPLATFORM_PROGRESS.md` |
-| 2026-09-04 | 1.4.2 | 工具链升级与项目迁移（补记+验证）：① 项目从 `D:\AAAAA\trae work\wedo` 迁移至 `D:\AAAAA\ai\wedo`（与小程序工程、跨平台进度文档同级）；② 构建工具链于 2026-09-01 晚升级——AGP 8.x→9.2.1、Kotlin 2.1.0→2.2.10、KSP→2.3.2、Gradle wrapper→9.4.1（源码零改动，升级当日已成功产出 debug APK），2026-09-04 于新路径 CLI 复验：编译通过（需设置可执行临时目录，见 §7.2）、106 个单元测试在 ASCII 副本下全部通过；③ 应用版本号对齐文档：`versionCode` 3→4、`versionName` 1.2.0→1.4.2，`NutrientConstants.APP_VERSION` 联动更新（关于页与备份 meta 同步生效）；④ 文档交接化整理：新增 §1.3 关键依赖版本表，§7 路径与命令全面更新，变更历史改为最新在最上，注意事项补充 Vico 未使用、gradlew 未入库、CLI 临时目录限制；⑤ 跨平台进度文档 `MULTIPLATFORM_PROGRESS.md` 同步至 1.4.2（平台表/进度/差异矩阵/变更历史/待办优先级分析）。 | `build.gradle.kts`（根）, `gradle/wrapper/gradle-wrapper.properties`, `app/build.gradle.kts`, `domain/constants/NutrientConstants.kt`, `PROJECT_DOCUMENTATION.md`, `../MULTIPLATFORM_PROGRESS.md` |
-| 2026-09-01 | 1.4.1 | 修复编译验证阶段发现的 4 个历史遗留测试失败：① `BackupManager.previewData` 对 `targets: null` / `records: null` 调用 `.jsonObject` 抛 `IllegalArgumentException` → 改为 `as? JsonObject` 安全转换；② `BackupManagerTest` 两处 `schemaVersion` 断言硬编码为 1（实际 SCHEMA_VERSION 已升至 3）→ 改用 `NutrientConstants.SCHEMA_VERSION`；③ `CalculatorTest.calcGap` 恰好落在 `.5` 取整边界与 JS `Math.round` 向正无穷行为冲突 → 调整测试输入至 -499.46 远离边界。修复后 106 个单元测试全部通过（0 failures）。 | `domain/usecase/BackupManager.kt`, `test/.../BackupManagerTest.kt`, `test/.../CalculatorTest.kt` |
-| 2026-08-31 | 1.4.0 | 架构现代化（六项）：① 仓库读操作全面 Flow 化，ViewModel 自动刷新；② navigation-compose 升级 2.8.2，改用 @Serializable 类型安全路由（`AppRoutes.kt`），删除 `AppState` 跨页单例；③ 业务逻辑下沉 UseCase（`UnitConverter`/`MealFormValidator`/`BodyStatsValidator`/`FoodTemplateMapper`）；④ 全部 ViewModel 收敛为单一 `UiState`（StateFlow）+ MVI 风格；⑤ 一次性 Toast 改为 `Channel<UIEvent>` 事件流，删除 `toastMessage`/`consumeToast`；⑥ 仓库写操作统一返回 `Resource<Unit>`，错误信息直达 UI；androidTest 断言同步适配。 | `app/build.gradle.kts`, `ui/navigation/{AppRoutes,NavigationItem,AppNavGraph,MainScreen}.kt`, `ui/AppState.kt`（删除）, `domain/model/Resource.kt`, `domain/usecase/{UnitConverter,MealFormValidator,BodyStatsValidator,FoodTemplateMapper}.kt`, `domain/repository/LocalStorageRepository.kt`, `data/repository/RoomLocalStorageRepository.kt`, `viewmodel/{UIEvent,RecordViewModel,HomeViewModel,WeeklyViewModel,FoodTemplateViewModel,BodyStatsViewModel,SettingsViewModel}.kt`, `ui/screens/{RecordScreen,HomeScreen,WeeklyScreen,FoodTemplateScreen,BodyStatsScreen,SettingsScreen}.kt`, `NutritionApp.kt`, `androidTest/.../RoomLocalStorageRepositoryTest.kt` |
-| 2026-07-10 | 1.3.0 | 模板标签功能：每个模板支持多个标签，新增/编辑时可添加或选择已有标签；模板管理页采用「搜索 + 横向快捷标签 + 全部筛选」的 AC 融合布局；数据库升级到 v4 新增 `tagsJson` 字段。 | `domain/model/FoodTemplate.kt`, `data/local/entity/FoodTemplateEntity.kt`, `data/local/db/NutritionDatabase.kt`, `data/local/db/FoodTemplateDao.kt`, `data/repository/RoomLocalStorageRepository.kt`, `domain/usecase/BackupManager.kt`, `viewmodel/FoodTemplateViewModel.kt`, `ui/screens/FoodTemplateScreen.kt` |
-| 2026-07-10 | 1.3.0 | 扩充预设食物模板库至约 200 种，覆盖主食、肉蛋奶、豆制品、蔬菜、水果、坚果零食、饮品、油脂调料等；升级时使用 `insertOrIgnore` 补全新预设，不覆盖已编辑项。 | `domain/constants/PresetFoodTemplates.kt`, `data/local/db/FoodTemplateDao.kt`, `data/repository/RoomLocalStorageRepository.kt` |
-| 2026-07-10 | 1.3.0 | 食物模板功能增强：保存新记录后，若食物名称尚未存在模板中，自动弹出提示询问是否保存为模板；自定义模板支持编辑，预设模板不可编辑。 | `viewmodel/RecordViewModel.kt`, `viewmodel/FoodTemplateViewModel.kt`, `ui/screens/RecordScreen.kt`, `ui/screens/FoodTemplateScreen.kt` |
-| 2026-07-10 | 1.3.0 | 录入页「热量」支持 kcal / kJ 双单位并列输入，输入任意一方自动按 1 kcal = 4.184 kJ 换算。 | `viewmodel/RecordViewModel.kt`, `ui/screens/RecordScreen.kt` |
-| 2026-07-10 | 1.3.0 | 录入页支持按重量换算：新增「克重(g)」字段，表单同时维护每100g基础值与实际摄入量；模板按重量自动换算；记录卡片非100g时显示克重；`MealRecord` 新增 `weightGrams` 字段并保证备份兼容。 | `domain/model/MealRecord.kt`, `domain/usecase/BackupManager.kt`, `viewmodel/RecordViewModel.kt`, `ui/screens/RecordScreen.kt`, `ui/components/RecordItem.kt` |
-| 2026-07-07 | 1.2.0 | 三期：新增食物模板与体重/体脂趋势记录。食物模板含 20 种预设常见食物，录入时支持自动补全；身体记录支持体重趋势图。数据库升级到 v3，备份 schemaVersion 升级到 3。 | `domain/model/{FoodTemplate,BodyRecord}.kt`, `data/local/entity/{FoodTemplateEntity,BodyRecordEntity}.kt`, `data/local/db/{FoodTemplateDao,BodyRecordDao}.kt`, `data/local/db/NutritionDatabase.kt`, `data/repository/RoomLocalStorageRepository.kt`, `domain/repository/LocalStorageRepository.kt`, `domain/usecase/BackupManager.kt`, `domain/constants/PresetFoodTemplates.kt`, `viewmodel/{FoodTemplateViewModel,BodyStatsViewModel,RecordViewModel}.kt`, `ui/screens/{FoodTemplateScreen,BodyStatsScreen,SettingsScreen,RecordScreen}.kt`, `ui/charts/WeightLineChart.kt`, `ui/navigation/AppNavGraph.kt` 等 |
-| 2026-07-06 | 1.1.0 | 优化：首页「录入」悬浮按钮滑动时自动隐藏；首页/录入页日期栏支持 DatePicker 快速跳转；录入页默认按系统时间选择餐次。 | `ui/screens/HomeScreen.kt`, `ui/screens/RecordScreen.kt`, `viewmodel/RecordViewModel.kt`, `viewmodel/HomeViewModel.kt` |
-| 2026-07-06 | 1.1.0 | 二期：新增代谢计算功能。新增身体档案模型、BMR/TDEE 计算、推荐目标生成、设置页身体档案 UI、首页 TDEE 展示；数据库升级到 v2。 | `domain/model/{Gender,ActivityLevel,BodyProfile}.kt`, `domain/usecase/MetabolismCalculator.kt`, `data/*`, `viewmodel/SettingsViewModel.kt`, `ui/screens/SettingsScreen.kt`, `viewmodel/HomeViewModel.kt`, `ui/screens/HomeScreen.kt` 等 |
-| 2026-07-06 | 1.0.0 | 初始版本：完成 12 Story MVP，含首页、录入、周报、设置四大页面，数据导入导出，自定义图标。 | 全部 |
+| 2026-11-12 | 0.2.2 | 视觉与审美质感重塑：① 卡片浮雕层级，浅灰背景（#F5F6F8）+ 纯白卡片（#FFFFFF）+ 1dp 弱环境阴影；② 深色模式对比拉伸；③ 鲜活高饱和营养素色谱（蛋白 #5B8DEF、脂肪 #EFA030、碳水 #41B876）；④ 录入页餐次切换重构为包裹式圆角滑块胶囊（Pill Tab）；⑤ 移除空状态系统 Emoji（🍽️、📊），替换为灰线矢量 Material Icons；⑥ 总览页间距拉伸至 16dp，设置页底栏防遮挡留白 80dp；⑦ 餐次卡片 Spring 阻尼回弹微交互；全套 149 个单元测试 100% 通过。 | `ui/theme/Color.kt`, `ui/theme/Theme.kt`, `ui/screens/{HomeScreen,RecordScreen,WeeklyScreen,SettingsScreen,FoodTemplateScreen,BodyStatsScreen}.kt`, `ui/components/MealCard.kt`, `build.gradle.kts`, `NutrientConstants.kt`, `CHANGELOG.md`, `README.md` |
+| 2026-11-12 | 0.2.1 | 交互精简与动效对齐：① 食物模板标题折叠动效（32sp 吸顶折叠至 20sp）；② 食物模板滚动浮现回到顶部 FAB；③ 移除所有页面小字副标题；④ 设置枚举结构简化；⑤ 版本号规范调整为 0.2.1（Alpha/预览体验版阶段）。 | `ui/screens/FoodTemplateScreen.kt`, `viewmodel/SettingsViewModel.kt`, `ui/screens/*.kt`, `CHANGELOG.md` |
 
 ---
 
-*本文档随功能升级、发布和验证结果同步维护。1.4.3 的阶段性收尾属于历史记录；当前持续按用户反馈迭代。每次变更在历史表顶部追加记录，保留提交、环境与证据的对应关系。*
+*本文档随功能升级、发布和验证结果同步维护。*

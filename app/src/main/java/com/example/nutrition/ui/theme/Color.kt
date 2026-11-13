@@ -6,9 +6,9 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 
 // Nutrient identity colors also appear in ViewModel display data.
-val ProteinColor = Color(0xFF7D8DC1)
-val FatColor = Color(0xFFC69A54)
-val CarbsColor = Color(0xFF739D82)
+val ProteinColor = Color(0xFF5B8DEF)  // 清澈蓝（原 #7D8DC1 灰蓝）
+val FatColor     = Color(0xFFEFA030)  // 温暖橙（原 #C69A54 灰褐）
+val CarbsColor   = Color(0xFF41B876)  // 翠绿（原 #739D82 灰绿）
 
 // Existing UI names resolve to the active Material theme, including dark mode.
 val Primary: Color @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary

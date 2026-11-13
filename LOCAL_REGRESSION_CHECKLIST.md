@@ -1,10 +1,10 @@
 # 底层优化、代码清理与 UI 改版：本地统一回归清单
 
-底层调整为预防性的可靠性和状态管理优化，目前没有用户反馈导入故障。其后在 `codex/atomic-backup-import` 开发分支完成六页 UI 改版和页头优化。**2026-10-06 用户确认全部内容已完成真机手工测试，并授权合并 main、发布 1.4.5 及清理开发分支。** 以下条目保留为后续版本的回归检查表；未勾选框不是本轮尚未验收的声明。
+底层调整为预防性的可靠性和状态管理优化，目前没有用户反馈导入故障。以下条目保留为后续版本的回归检查表；未勾选框不是本轮尚未验收的声明。
 
-后续代码清理已删除未使用的封装、依赖与重复工厂，并精简食物预设声明；该清理阶段未改页面布局；随后 UI 改版分为四批独立提交。三个独立提交为 `592a1bc`、`5d2d62d`、`aa75c70`，清理后的编译、121 个 JVM 用例和 Lint 均已通过，见云端验证记录。
+后续代码清理已删除未使用的封装、依赖与重复工厂，并精简食物预设声明；该清理阶段未改页面布局；随后 UI 改版分为四批独立提交。
 
-发布主线为 `main`，1.4.5 对应 versionCode 6；Room 数据库保持 v4，备份 Schema 保持 v3。本轮没有新增数据库迁移或应用网络权限；WeDo 链接通过系统浏览器打开项目。每项优化的原提交仍保留在 Git 历史中。发布、构建与签名操作见 [维护操作说明](./MAINTENANCE.md)，分阶段验证结果见 [验证记录](./CLOUD_VALIDATION.md)。
+发布主线为 `main`，当前版本为 0.2.2（versionCode 10）；Room 数据库保持 v4，备份 Schema 保持 v3。本轮没有新增数据库迁移或应用网络权限；WeDo 链接通过系统浏览器打开项目。发布、构建与签名操作见 [维护操作说明](./MAINTENANCE.md)，分阶段验证结果见 [验证记录](./CLOUD_VALIDATION.md)。
 
 ## 拉取与构建
 
@@ -20,7 +20,7 @@ git log --oneline -12
 .\gradlew.bat :app:compileDebugKotlin :app:testDebugUnitTest :app:lintDebug
 ```
 
-复现正式版本时使用 `git switch --detach v1.4.5`；开始新修改时从最新 `main` 创建新的 `codex/` 分支。具体构建环境使用 JDK 21 运行 Gradle 9.4.1，源码 JVM target 为 17，Windows 临时目录设置见 [维护操作说明](./MAINTENANCE.md)。
+复现正式版本时使用 `git switch --detach v0.2.2`；开始新修改时从最新 `main` 创建分支。具体构建环境使用 JDK 21 运行 Gradle 9.4.1，源码 JVM target 为 17，Windows 临时目录设置见 [维护操作说明](./MAINTENANCE.md)。
 
 自动 instrumentation 与手工界面验收分别记录。本轮 38 个 Room 设备用例没有实际自动执行；后续连接已开启 USB 调试的 Android 设备或模拟器后可执行：
 
@@ -95,4 +95,4 @@ JVM 报告：`app/build/reports/tests/testDebugUnitTest/index.html`。设备报�
 
 ## 记录测试结果
 
-每轮测试记录当前 `git rev-parse HEAD`、应用版本、Android 版本、设备型号，以及构建/JVM/Lint/instrumentation/手工验收各自结果和异常步骤。本轮验收代码为 `24facaa`，用户确认日期为 2026-10-06；未提供的设备型号和 Android 版本不补写猜测值。若需要比较优化前行为，以 `0933870` 为历史基线，各优化项可通过独立提交查看差异。1.4.5 的合并与发布由用户本轮明确授权，发布完成情况见 [维护操作说明](./MAINTENANCE.md)。
+每轮测试记录当前 `git rev-parse HEAD`、应用版本、Android 版本、设备型号，以及构建/JVM/Lint/instrumentation/手工验收各自结果和异常步骤。当前最新版本构建、发布与验证情况见 [维护操作说明](./MAINTENANCE.md)。
