@@ -163,7 +163,6 @@ class RecordViewModelTest {
         assertEquals("第一餐", written?.name)
         assertEquals("下一餐", viewModel.uiState.value.foodName)
         assertEquals("400", viewModel.uiState.value.calories)
-        assertNull(viewModel.uiState.value.pendingTemplate)
     }
     @Test
     fun changingDate_clearsPreviousRecords_beforeDelayedReadCompletes() = runTest {

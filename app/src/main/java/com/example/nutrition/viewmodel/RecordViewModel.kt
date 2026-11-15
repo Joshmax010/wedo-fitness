@@ -81,10 +81,6 @@ class RecordViewModel(
         val isLoadingRecords: Boolean = true,
         // 编辑状态
         val editingId: String? = null,
-        // 保存为模板弹窗
-        val pendingTemplate: FoodTemplate? = null,
-        val saveAsTemplateTags: Set<String> = emptySet(),
-        val newTemplateTagInput: String = "",
         // 删除确认弹窗
         val deleteConfirm: DeleteTarget? = null,
         // 食物模板
@@ -92,11 +88,7 @@ class RecordViewModel(
         val templateSuggestions: List<FoodTemplate> = emptyList(),
         val dataError: String? = null,
         val templateError: String? = null
-    ) {
-        /** 当前模板库中已有的所有标签 */
-        val allTemplateTags: List<String>
-            get() = templates.map { it.tags }.flatten().distinct().sorted()
-    }
+    )
 
     // 删除确认弹窗（存储快照防止日期/餐次切换导致误删）
     data class DeleteTarget(val id: String, val dateStr: String, val mealKey: MealKey)
@@ -189,7 +181,7 @@ class RecordViewModel(
     }
 
     private fun hasPendingForm(): Boolean = _uiState.value.run {
-        editingId != null || pendingTemplate != null || foodName.isNotBlank() || calories.isNotBlank() ||
+        editingId != null || foodName.isNotBlank() || calories.isNotBlank() ||
             protein.isNotBlank() || fat.isNotBlank() || carbs.isNotBlank() ||
             formMicronutrients.isNotEmpty() || weight != "100"
     }
@@ -381,68 +373,6 @@ class RecordViewModel(
         }
     }
 
-    // ==================== 保存为模板弹窗 ====================
-
-    fun onNewTemplateTagInput(value: String) {
-        _uiState.update { it.copy(newTemplateTagInput = value) }
-    }
-
-    fun addNewTemplateTag() {
-        _uiState.update { state ->
-            val tag = state.newTemplateTagInput.trim()
-            if (tag.isEmpty()) {
-                state
-            } else {
-                state.copy(
-                    saveAsTemplateTags = state.saveAsTemplateTags + tag,
-                    newTemplateTagInput = ""
-                )
-            }
-        }
-    }
-
-    fun toggleSaveAsTemplateTag(tag: String) {
-        _uiState.update { state ->
-            state.copy(
-                saveAsTemplateTags = if (tag in state.saveAsTemplateTags) {
-                    state.saveAsTemplateTags - tag
-                } else {
-                    state.saveAsTemplateTags + tag
-                }
-            )
-        }
-    }
-
-    fun removeSaveAsTemplateTag(tag: String) {
-        _uiState.update { it.copy(saveAsTemplateTags = it.saveAsTemplateTags - tag) }
-    }
-
-    fun confirmSaveAsTemplate() {
-        val state = _uiState.value
-        val template = state.pendingTemplate ?: return
-        val tagged = template.copy(tags = state.saveAsTemplateTags.toList())
-        dismissSaveTemplatePrompt()
-
-        viewModelScope.launchWithErrorFeedback("操作失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {
-            when (val result = repository.saveFoodTemplate(tagged)) {
-                is Resource.Success -> sendEvent(UIEvent.ShowToast("已保存到模板"))
-                is Resource.Error -> sendEvent(UIEvent.ShowToast(result.message))
-            }
-        }
-    }
-
-    fun dismissSaveTemplatePrompt() {
-        resetForm()
-        _uiState.update {
-            it.copy(pendingTemplate = null, saveAsTemplateTags = emptySet(), newTemplateTagInput = "")
-        }
-    }
-
-    private fun shouldPromptSaveAsTemplate(name: String): Boolean {
-        if (name.isBlank()) return false
-        return _uiState.value.templates.none { it.name.equals(name, ignoreCase = true) }
-    }
-
     // ==================== 保存记录 ====================
 
     fun saveRecord() {
@@ -508,16 +438,8 @@ class RecordViewModel(
                 return@launchWithErrorFeedback
             }
 
-            // 新增记录且食物名未存在模板中时，询问是否保存为模板
-            if (!isEdit && shouldPromptSaveAsTemplate(record.name)) {
-                _uiState.update {
-                    it.copy(pendingTemplate = FoodTemplateMapper.fromMealRecord(record))
-                }
-                sendEvent(feedback)
-            } else {
-                resetForm()
-                sendEvent(feedback)
-            }
+            resetForm()
+            sendEvent(feedback)
         }
     }
 

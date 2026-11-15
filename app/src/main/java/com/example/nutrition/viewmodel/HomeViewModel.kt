@@ -55,10 +55,6 @@ class HomeViewModel(
         val count: Int
     )
 
-    data class StorageWarn(
-        val message: String
-    )
-
     // ==================== UI 状态 ====================
 
     data class UiState(
@@ -72,7 +68,6 @@ class HomeViewModel(
         val macros: List<MacroData> = emptyList(),
         val micros: List<MicroData> = emptyList(),
         val meals: List<MealData> = emptyList(),
-        val storageWarn: StorageWarn? = null,
         val showGuide: Boolean = false,
         // 二期：代谢计算相关展示
         val tdee: Double? = null,
@@ -110,7 +105,6 @@ class HomeViewModel(
         val targets = targetsOrNull ?: NutrientConstants.getDefaultTargets()
         val dayAgg = Calculator.aggregateDay(dayData)
         val gap = Calculator.calcGap(dayAgg.calories.toDouble(), targets.calories)
-        val capacity = repository.checkStorageCapacity()
 
         _uiState.update { state ->
             state.copy(
@@ -156,12 +150,6 @@ class HomeViewModel(
                         calories = mealAgg?.calories ?: 0,
                         count = dayData.getMeal(mealKey).size
                     )
-                },
-                // 存储容量告警
-                storageWarn = if (capacity.warn || !capacity.ok) {
-                    StorageWarn(capacity.message)
-                } else {
-                    null
                 }
             )
         }
@@ -171,24 +159,11 @@ class HomeViewModel(
      * 检测首次使用并显示引导
      */
     fun checkFirstUse() {
-        viewModelScope.launchWithErrorFeedback("读取应用信息失败，请重试", { message -> _uiState.update { it.copy(metadataError = message) } }) {
-            val meta = repository.getMeta().first()
-            _uiState.update { it.copy(showGuide = meta == null || !meta.hasSeenGuide, metadataError = null) }
-        }
+        _uiState.update { it.copy(showGuide = false, metadataError = null) }
     }
 
-    /**
-     * 标记引导已完成
-     */
     fun onGuideFinish() {
         _uiState.update { it.copy(showGuide = false) }
-        viewModelScope.launchWithErrorFeedback("读取应用信息失败，请重试", { message -> _uiState.update { it.copy(metadataError = message) } }) {
-            val meta = repository.getMeta().first() ?: NutrientConstants.getDefaultMeta()
-            val result = repository.setMeta(meta.copy(hasSeenGuide = true))
-            _uiState.update {
-                it.copy(metadataError = (result as? com.example.nutrition.domain.model.Resource.Error)?.message)
-            }
-        }
     }
 
     // ==================== 日期切换 ====================

@@ -36,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,6 +70,8 @@ fun MainScreen() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destination = backStackEntry?.destination
     val context = LocalContext.current
+    val updateManager = remember(context) { com.example.nutrition.updater.UpdateManager.getInstance(context) }
+    var showBrandSheet by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val chrome = remember(density) { PageChrome(with(density) { 8.dp.toPx() }) }
     val keyboardOpen = WindowInsets.ime.getBottom(density) > 0
@@ -155,18 +158,10 @@ fun MainScreen() {
                                 }
                             )
                             if (rootPage != null) {
-                                TextButton(
-                                    onClick = {
-                                        try {
-                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Joshmax010/wedo-fitness")))
-                                        } catch (_: ActivityNotFoundException) {
-                                            Toast.makeText(context, "未找到可打开链接的应用", Toast.LENGTH_SHORT).show()
-                                        }
-                                    },
-                                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "打开 WeDo 的 GitHub 项目" }
-                                ) {
-                                    Text("wedo", style = MaterialTheme.typography.headlineMedium, color = Primary, fontWeight = FontWeight.Bold)
-                                }
+                                com.example.nutrition.ui.components.WeDoBrandBadge(
+                                    updateAvailable = updateManager.updateAvailable,
+                                    onClick = { showBrandSheet = true }
+                                )
                             }
                         }
                 }
@@ -206,6 +201,12 @@ fun MainScreen() {
                     }
                 }
             }
+        }
+
+        if (showBrandSheet) {
+            com.example.nutrition.ui.components.BrandBottomSheet(
+                onDismissRequest = { showBrandSheet = false }
+            )
         }
     }
 }

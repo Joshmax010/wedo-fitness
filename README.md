@@ -17,9 +17,9 @@
 所有数据存储于设备本地，无需注册账户，核心功能完全离线可用。
 
 <p align="center">
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk"><strong>📦 下载最新版 v0.2.2</strong></a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk"><strong>📦 下载最新版 v0.2.3</strong></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.2">版本说明</a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.3">版本说明</a>
   &nbsp;·&nbsp;
   <a href="./MAINTENANCE.md">维护指南</a>
   &nbsp;·&nbsp;
@@ -62,11 +62,11 @@
 
 | 项目 | 详情 |
 | :--- | :--- |
-| 版本号 | **0.2.2**（versionCode 10） |
+| 版本号 | **0.2.3**（versionCode 11） |
 | 系统要求 | Android 8.0（API 26）及以上 |
-| 安装包 | [`wedo-fitness-v0.2.2.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk)（约 2.2 MB） |
+| 安装包 | [`wedo-fitness-v0.2.3.apk`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk)（约 2.67 MB） |
 | 应用包名 | `com.example.nutrition` |
-| SHA-256 校验 | [`wedo-fitness-v0.2.2.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk.sha256) |
+| SHA-256 校验 | [`wedo-fitness-v0.2.3.apk.sha256`](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk.sha256) |
 
 ### 安装说明
 
@@ -84,6 +84,14 @@
 ---
 
 ## 版本更新
+
+### v0.2.3 · 2026-11-15
+
+- **WeDo 官方新 Logo 与自适应桌面图标**：采用全新设计的 W-沙拉碗徽标，严格遵循 Android 13+ Adaptive Icon 规范生成纯净透明前景与 `#FCFCF4` 米白背景，全密度高清渲染，彻底替换旧版占位图标。
+- **顶栏 WeDo 品牌微胶囊与沉浸式浮层**：原有文本链接全面升级为 `WeDoBrandBadge`（翡翠绿轻胶囊、18dp 官方徽标、粗体 WeDo 字标与弹性物理缩放动效），点击滑出官方品牌面板（大 Logo、Slogan、版本号与开源主页）。
+- **阶段一极简瘦身**：移除 100MB 伪存储告警横幅、记饭“保存为模板？”阻塞弹窗与 4 步 Emoji 引导遮罩，录入实现即点即存。
+- **微量元素按需折叠**：设置中增加“显示微量营养素”开关，默认完全隐藏，界面 100% 聚焦热量与三大宏量营养素。
+- **方案 B 自动检测版本更新**：仅声明 `INTERNET` 权限，基于原生 `HttpURLConnection` 与 `kotlinx.serialization` 构建（零额外第三方依赖），国内双节点弹性静默检测，无感绿点提示，带完全离线隐私硬开关。
 
 ### v0.2.2 · 2026-11-12
 
@@ -107,7 +115,7 @@
 WeDo 将用户隐私视为核心设计原则：
 
 - **本地存储**：所有数据保存在设备本地 Room 数据库中，外观偏好保存于本机 SharedPreferences。
-- **无网络权限**：应用不申请 `INTERNET` 权限，不包含任何账号体系、云端同步或数据上传接口。
+- **极简网络与纯粹隐私**：应用仅申请 `INTERNET` 权限用于自检 GitHub 静态版本更新日志，绝无任何个人数据收集、云端同步或上传接口；设置中提供“自动检测版本更新”硬开关，关闭后彻底阻断网络请求，回归 100% 纯单机。
 - **透明备份**：备份采用人类可读的 JSON 格式，导出至剪贴板，导入前支持完整内容预览。
 - **数据清除提醒**：卸载应用或清除应用数据将永久删除本地记录。应用已关闭 Android 自动备份功能，请自行妥善保存导出的 JSON 文件。
 
@@ -224,7 +232,14 @@ Copyright © 2026 [Joshmax010](https://github.com/Joshmax010)
 
 All data is stored locally on the device. No account registration is required, and core features are fully functional offline.
 
-**[Download v0.2.2](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.2/wedo-fitness-v0.2.2.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.2)
+**[Download v0.2.3](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk)** · [Release Notes](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.3)
+
+### What's New in v0.2.3
+
+- **WeDo Brand Identity Upgrade**: Integrated official W-salad brand mark into Android 13+ adaptive launcher icons and interactive topbar capsule (`WeDoBrandBadge`), complete with rich `BrandBottomSheet`.
+- **Lean Cleanups**: Removed legacy 100MB fake storage alert, onboarding emoji overlay, and blocking meal-logging prompt for frictionless instant logging.
+- **Collapsible Micronutrients**: Added toggle in settings to fold away micronutrient tables by default.
+- **Option B Auto-Update**: Zero-dependency silent update probe with GitHub Pages and GitHub API dual-node fallback, subtle badge indicator, and full offline privacy toggle.
 
 ### What's New in v0.2.2
 

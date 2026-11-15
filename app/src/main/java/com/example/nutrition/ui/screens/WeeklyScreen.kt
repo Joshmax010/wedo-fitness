@@ -103,13 +103,15 @@ fun WeeklyScreen(
                 // ========== 空状态 ==========
                 if (uiState.dataError == null) EmptyState()
             } else {
+                val appearance = com.example.nutrition.ui.theme.LocalAppearance.current
                 // ========== 周报摘要 ==========
                 uiState.summary?.let { summary ->
                     SummaryCard(
                         summary = summary,
                         nutrientRates = uiState.nutrientRates,
                         onCopyReport = {
-                            copyToClipboard(context, uiState.reportText)
+                            val text = viewModel.getReportText(includeMicros = appearance.showMicronutrients)
+                            copyToClipboard(context, text)
                             Toast.makeText(context, "周报已复制", Toast.LENGTH_SHORT).show()
                         }
                     )
@@ -129,7 +131,7 @@ fun WeeklyScreen(
                 }
 
                 // ========== 微量营养素周览 ==========
-                if (uiState.microTable.isNotEmpty()) {
+                if (appearance.showMicronutrients && uiState.microTable.isNotEmpty()) {
                     MicroTableCard(rows = uiState.microTable)
                 }
 

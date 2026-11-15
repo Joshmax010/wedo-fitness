@@ -272,22 +272,23 @@ class RoomLocalStorageRepository(
     override suspend fun getStorageStatus(): StorageStatus {
         val path = db.openHelper.writableDatabase.path ?: return StorageStatus(0, 0, 0)
         val file = java.io.File(path)
-        val currentSize = if (file.exists()) file.length() else 0L
-        return StorageStatus(currentSize, 100L * 1024 * 1024, recordDao.count())
+        val currentSize = if (file.exists()) {
+            val wal = java.io.File("${path}-wal")
+            val shm = java.io.File("${path}-shm")
+            file.length() + (if (wal.exists()) wal.length() else 0L) + (if (shm.exists()) shm.length() else 0L)
+        } else 0L
+        val limitSize = if (file.exists() && file.freeSpace > 0) file.freeSpace else Long.MAX_VALUE
+        return StorageStatus(currentSize, limitSize, recordDao.count())
     }
 
     override suspend fun checkStorageCapacity(): CapacityStatus {
         val status = getStorageStatus()
-        val ratio = if (status.limitSize > 0) status.currentSize.toDouble() / status.limitSize else 0.0
-        val message = when {
-            ratio >= 1.0 -> "存储空间已满，请导出数据后清理"
-            ratio >= CAPACITY_WARN_RATIO -> "存储空间即将用尽，建议导出备份"
-            else -> ""
-        }
         return CapacityStatus(
-            ok = ratio < CAPACITY_WARN_RATIO,
-            warn = ratio >= CAPACITY_WARN_RATIO && ratio < 1.0,
-            currentSize = status.currentSize, limitSize = status.limitSize, message = message
+            ok = true,
+            warn = false,
+            currentSize = status.currentSize,
+            limitSize = status.limitSize,
+            message = ""
         )
     }
 
@@ -524,9 +525,5 @@ class RoomLocalStorageRepository(
             note = note,
             createdAt = createdAt
         )
-    }
-
-    companion object {
-        private const val CAPACITY_WARN_RATIO = 0.8
     }
 }

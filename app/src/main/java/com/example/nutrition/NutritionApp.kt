@@ -39,6 +39,17 @@ class NutritionApp : Application() {
                 Log.e("NutritionApp", "Unable to read application metadata", e)
             }
         }
+
+        // 启动时静默检测版本更新（遵循设置开关，离线/超时静默失败）
+        appScope.launch {
+            try {
+                com.example.nutrition.updater.UpdateManager.getInstance(this@NutritionApp).checkUpdate()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.d("NutritionApp", "Silent update check failed or skipped", e)
+            }
+        }
     }
 
     /**

@@ -450,6 +450,37 @@ class CalculatorTest {
     }
 
     @Test
+    fun `generateWeekReportText - includeMicros 为 false 时省略微量营养素`() {
+        val summary = Calculator.WeekSummary(
+            avgCalories = 1850,
+            avgProtein = 95.5,
+            avgFat = 60.0,
+            avgCarbs = 220.3,
+            achievementDays = 5,
+            totalGap = -1050.0,
+            nutrientRates = listOf(
+                Calculator.NutrientRate("热量", 92.5),
+                Calculator.NutrientRate("蛋白质", 79.6),
+                Calculator.NutrientRate("脂肪", 92.3),
+                Calculator.NutrientRate("碳水", 88.1)
+            ),
+            microTable = listOf(
+                Calculator.MicroTableRow("vitC", "维生素C", "mg", 85.0, 100.0, 85.0),
+                Calculator.MicroTableRow("calcium", "钙", "mg", 600.0, 800.0, 75.0)
+            ),
+            dailyData = emptyList()
+        )
+        val text = Calculator.generateWeekReportText(summary, "06.29 - 07.05", includeMicros = false)
+
+        assertTrue(text.contains("【营养周报 06.29 - 07.05】"))
+        assertTrue(text.contains("1850 kcal"))
+        assertFalse(text.contains("微量营养素日均摄入"))
+        assertFalse(text.contains("维生素C"))
+        assertFalse(text.contains("钙"))
+        assertTrue(text.contains("由营养记录生成"))
+    }
+
+    @Test
     fun `generateWeekReportText - 空微量营养素也不报错`() {
         val summary = Calculator.WeekSummary(
             avgCalories = 0,

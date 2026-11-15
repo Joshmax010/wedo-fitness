@@ -251,7 +251,11 @@ object Calculator {
      * 生成周报摘要文本（用于复制到剪贴板）
      * 对应 JS: generateWeekReportText(summary, weekRange)
      */
-    fun generateWeekReportText(summary: WeekSummary, weekRange: String): String {
+    fun generateWeekReportText(
+        summary: WeekSummary,
+        weekRange: String,
+        includeMicros: Boolean = true
+    ): String {
         val sb = StringBuilder()
         sb.appendLine("【营养周报 $weekRange】")
         sb.appendLine()
@@ -266,10 +270,12 @@ object Calculator {
         for (nr in summary.nutrientRates) {
             sb.appendLine("  ${nr.name}：${nr.rate}%")
         }
-        sb.appendLine()
-        sb.appendLine("微量营养素日均摄入：")
-        for (mt in summary.microTable) {
-            sb.appendLine("  ${mt.name}：${mt.dailyAvg}${mt.unit} / 目标 ${mt.target}${mt.unit}（${mt.rate}%）")
+        if (includeMicros && summary.microTable.isNotEmpty()) {
+            sb.appendLine()
+            sb.appendLine("微量营养素日均摄入：")
+            for (mt in summary.microTable) {
+                sb.appendLine("  ${mt.name}：${mt.dailyAvg}${mt.unit} / 目标 ${mt.target}${mt.unit}（${mt.rate}%）")
+            }
         }
         sb.appendLine()
         sb.append("—— 由营养记录生成")

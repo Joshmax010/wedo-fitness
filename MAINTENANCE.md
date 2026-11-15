@@ -2,26 +2,26 @@
 
 ## 1. 当前版本与验证边界
 
-- 发布版本：**0.2.2 / versionCode 10**；Room 数据库 v4，备份 Schema v3。
-- 全套 149 个 JVM 单元测试 100% 通过（0 失败、0 错误、0 跳过）；Lint 0 错误。
+- 发布版本：**0.2.3 / versionCode 11**；Room 数据库 v4，备份 Schema v3。
+- 全套 JVM 单元测试 100% 通过（0 失败、0 错误、0 跳过）；Lint 0 错误。
 - 正式发布构建已通过：`assembleRelease`（R8 混淆）、`testDebugUnitTest`。
 - 正式 APK 已完成本地版本、包名、非 debuggable 与签名核验；证书与官方正式密钥一致。
 
 | 正式 APK 项目 | 本地核验结果 |
 |---|---|
-| 文件名 | `wedo-fitness-v0.2.2.apk` |
-| 文件大小 | 2,210,709 字节 |
-| versionName / versionCode | 0.2.2 / 10 |
+| 文件名 | `wedo-fitness-v0.2.3.apk` |
+| 文件大小 | 2,674,801 字节 |
+| versionName / versionCode | 0.2.3 / 11 |
 | applicationId | `com.example.nutrition` |
-| SHA-256 | `216ba933f707ec6896556bf5d74964bbf59b83dbb59b622d0e1945fe1f748d9a` |
+| SHA-256 | `315bf437182e33bc7b9d0dbe4ddc435aa50efb04f8cd864afd12dc2a9f910347` |
 | 签名证书 SHA-256 | `041d81d18eb0d91506d4ec5c88d1c0f3a49aacf59bbaeb8f6d3fd697f8e4dd23` |
 | apksigner | 验证成功，v2=true、v3=false |
 
-[GitHub Release v0.2.2](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.2) 标记为 Latest。安装包下载与校验见 [README.md](./README.md)。
+[GitHub Release v0.2.3](https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.3) 标记为 Latest。安装包下载与校验见 [README.md](./README.md)。
 
 ## 2. 获取代码与构建环境
 
-主线为 `main`，正式版本由 `v0.2.2` 标签定位。首次克隆后进入仓库根目录；命令不依赖固定本地路径。
+主线为 `main`，正式版本由 `v0.2.3` 标签定位。首次克隆后进入仓库根目录；命令不依赖固定本地路径。
 
 ```powershell
 git fetch origin --tags
@@ -87,7 +87,7 @@ Get-FileHash -Algorithm SHA256 -LiteralPath 'app\build\outputs\apk\release\app-r
 ## 5. 故障定位与版本回退
 
 1. 先保留用户数据：能进入应用时导出 JSON 并保存到应用之外，确认备份内容可读；记录安装版本、设备信息、复现步骤和截图。先不要卸载或清除应用数据。
-2. 用 `git switch --detach v0.2.2` 等已发布标签在隔离工作目录或独立测试设备复现，再从 main 创建修复分支。构建、JVM、Lint 和影响范围内的手工步骤分别记录；数据相关问题补迁移、备份或 Room 测试。
+2. 用 `git switch --detach v0.2.3` 等已发布标签在隔离工作目录或独立测试设备复现，再从 main 创建修复分支。构建、JVM、Lint 和影响范围内的手工步骤分别记录；数据相关问题补迁移、备份或 Room 测试。
 3. 已安装正式版的 versionCode 不能用普通安装流程直接降级。需要恢复旧行为时，将修复提交或旧实现移植到当前 main，使用原正式证书并发布 **更高 versionCode** 的修复版本；保留数据库与备份兼容，避免要求普通用户卸载降级而丢失本地数据。
 4. 修复后核验签名、版本与 APK 哈希，再发布递增版本；旧发布标签和历史报告保留用于定位，不强制重写标签。确需在专用测试设备安装旧包时，先备份并单独评估旧版本是否能读取较新的数据库和备份，不能将该步骤作为普通用户恢复流程。
 

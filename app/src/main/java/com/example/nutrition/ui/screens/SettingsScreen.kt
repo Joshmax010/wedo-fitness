@@ -1,5 +1,20 @@
 package com.example.nutrition.ui.screens
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.res.painterResource
+import com.example.nutrition.BuildConfig
+import com.example.nutrition.R
+import kotlinx.coroutines.launch
 import com.example.nutrition.ui.components.ObserveUiEvents
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -132,10 +147,24 @@ fun SettingsScreen(
                     }
                     FeaturesCard(onTemplates = onNavigateToTemplates, onBodyStats = onNavigateToBodyStats)
                     val appearance = LocalAppearance.current
-                    SettingsMenuCard("应用与数据") {
+                    val updateManager = remember(context) { com.example.nutrition.updater.UpdateManager.getInstance(context) }
+                    SettingsMenuCard("偏好与显示") {
                         DataRow("外观", appearance.mode.label) { showAppearance = true }
+                        SwitchRow(
+                            title = "显示微量营养素",
+                            subtitle = "在首页、记录页及周报中展开微量营养素明细",
+                            checked = appearance.showMicronutrients,
+                            onCheckedChange = { appearance.updateShowMicronutrients(it) }
+                        )
+                    }
+                    SettingsMenuCard("应用与数据") {
                         DataRow("数据管理", "备份、导入与清空饮食记录", onClick = onNavigateToData)
-                        DataRow("关于", "版本、隐私与存储占用", onClick = onNavigateToAbout)
+                        DataRow(
+                            title = "关于",
+                            desc = if (updateManager.updateAvailable) "发现新版本可用 · 点击查看" else "版本、品牌、更新与存储占用",
+                            badgeDot = updateManager.updateAvailable,
+                            onClick = onNavigateToAbout
+                        )
                     }
                 }
                 SettingsSection.TARGETS -> {
@@ -371,6 +400,10 @@ private fun DataManagementCard(viewModel: SettingsViewModel) {
 
 @Composable
 private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.UiState) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val updateManager = remember { com.example.nutrition.updater.UpdateManager.getInstance(context) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -379,18 +412,206 @@ private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.U
         colors = CardDefaults.cardColors(containerColor = BgCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            SectionTitle("关于")
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
 
-            AboutRow("版本", viewModel.version)
-            AboutRow("数据存储", "本地保存，不上传")
+            // 完整 Brand Logo
+            Image(
+                painter = painterResource(R.drawable.ic_brand_logo_full),
+                contentDescription = "WeDo Full Logo",
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(20.dp))
+            )
 
-            uiState.storageInfo?.let { info ->
-                AboutRow("存储占用", "${info.currentKB} / ${info.limitKB} KB (${info.ratio}%)")
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "WeDo",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = "本地优先 · 极简纯净 · 营养与身体管理",
+                fontSize = 13.sp,
+                color = TextSecondary
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = "版本 v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
+                fontSize = 12.sp,
+                color = com.example.nutrition.ui.theme.TextPlaceholder
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(thickness = 0.5.dp, color = com.example.nutrition.ui.theme.Border)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 版本更新状态区
+            if (updateManager.updateAvailable && updateManager.latestInfo != null) {
+                val latest = updateManager.latestInfo!!
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Primary.copy(alpha = 0.1f))
+                        .padding(12.dp)
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF4CAF50))
+                            )
+                            Text(
+                                text = "发现新版本 v${latest.versionName}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Primary
+                            )
+                        }
+                        if (latest.changelog.isNotBlank()) {
+                            Text(
+                                text = latest.changelog,
+                                fontSize = 12.sp,
+                                color = TextSecondary,
+                                modifier = Modifier.padding(top = 4.dp),
+                                maxLines = 4
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                val url = latest.downloadUrl.ifBlank {
+                                    latest.releaseUrl.ifBlank { "https://github.com/Joshmax010/wedo-fitness/releases" }
+                                }
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                } catch (_: ActivityNotFoundException) {
+                                    Toast.makeText(context, "未找到可用浏览器", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("立即前往下载更新", fontSize = 13.sp, color = com.example.nutrition.ui.theme.TextInverse)
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            } else {
+                val statusDesc = when {
+                    updateManager.isChecking -> "正在检测更新..."
+                    updateManager.lastCheckResult is com.example.nutrition.updater.UpdateResult.UpToDate -> "已是最新版本"
+                    updateManager.lastCheckResult is com.example.nutrition.updater.UpdateResult.Error -> "未能获取到更新"
+                    else -> "点击按钮检查新版本"
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                        Text("版本状态", fontSize = 14.sp, color = TextSecondary)
+                        Text(
+                            text = statusDesc,
+                            fontSize = 12.sp,
+                            color = com.example.nutrition.ui.theme.TextPlaceholder
+                        )
+                    }
+                    if (updateManager.isChecking) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Primary)
+                    } else {
+                        OutlinedButton(
+                            onClick = {
+                                scope.launch {
+                                    when (val res = updateManager.checkUpdate(force = true)) {
+                                        is com.example.nutrition.updater.UpdateResult.NewVersionAvailable -> {
+                                            Toast.makeText(context, "发现新版本 v${res.info.versionName}", Toast.LENGTH_SHORT).show()
+                                        }
+                                        is com.example.nutrition.updater.UpdateResult.UpToDate -> {
+                                            Toast.makeText(context, "当前已是最新版本", Toast.LENGTH_SHORT).show()
+                                        }
+                                        is com.example.nutrition.updater.UpdateResult.Error -> {
+                                            Toast.makeText(context, res.message, Toast.LENGTH_SHORT).show()
+                                        }
+                                        is com.example.nutrition.updater.UpdateResult.Disabled -> {}
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("检查更新", fontSize = 12.sp, color = Primary)
+                        }
+                    }
+                }
+            }
+
+            // 自动检测版本更新开关
+            SwitchRow(
+                title = "自动检测版本更新 (联网)",
+                subtitle = "启动时静默检查 GitHub 发行版更新，离线时自动跳过",
+                checked = updateManager.autoCheckEnabled,
+                onCheckedChange = { updateManager.setAutoCheck(it) }
+            )
+
+            HorizontalDivider(thickness = 0.5.dp, color = com.example.nutrition.ui.theme.Border, modifier = Modifier.padding(vertical = 6.dp))
+
+            // 存储占用
+            AboutRow(
+                label = "本地存储占用",
+                value = "${uiState.storageInfo?.currentKB ?: "0"} KB (本地 SQLite 数据库)"
+            )
+
+            // 隐私保证
+            AboutRow(
+                label = "数据存储与隐私",
+                value = "100% 本地保存，无第三方 SDK"
+            )
+
+            // 开源社区
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Joshmax010/wedo-fitness")))
+                        } catch (_: ActivityNotFoundException) {
+                            Toast.makeText(context, "未找到可用浏览器", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("开源主页 (MIT License)", fontSize = 14.sp, color = TextSecondary)
+                Text("GitHub ›", fontSize = 14.sp, color = Primary, fontWeight = FontWeight.SemiBold)
             }
 
             // 免责声明
-            Column(modifier = Modifier.padding(top = 12.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+            ) {
                 Text(
                     text = "免责声明",
                     fontSize = 13.sp,
@@ -398,7 +619,7 @@ private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.U
                     color = TextPrimary
                 )
                 Text(
-                    text = "本工具仅提供数据记录与汇总功能，用于对比目标进度，不构成任何专业建议。如有特殊需求，请咨询专业人士。",
+                    text = "本工具仅提供数据记录与汇总功能，用于对比目标进度，不构成任何专业医疗或健身指导建议。",
                     fontSize = 12.sp,
                     color = TextSecondary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -409,15 +630,15 @@ private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.U
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Warning.copy(alpha = 0.08f))
-                    .padding(12.dp)
                     .padding(top = 12.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(com.example.nutrition.ui.theme.Warning.copy(alpha = 0.08f))
+                    .padding(12.dp)
             ) {
                 Text(
-                    text = "建议定期使用「导出数据」功能备份数据，卸载应用或清理缓存可能导致数据丢失。",
+                    text = "建议定期使用「数据管理」功能导出备份数据，卸载应用或清除应用数据可能导致本地记录丢失。",
                     fontSize = 12.sp,
-                    color = Warning
+                    color = com.example.nutrition.ui.theme.Warning
                 )
             }
         }
@@ -645,10 +866,49 @@ private fun MicroTargetRow(
 }
 
 @Composable
+private fun SwitchRow(
+    title: String,
+    subtitle: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onCheckedChange(!checked) }
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+            subtitle?.let {
+                Text(text = it, fontSize = 12.sp, color = TextPlaceholder, modifier = Modifier.padding(top = 2.dp))
+            }
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Primary
+            )
+        )
+    }
+}
+
+@Composable
 private fun DataRow(
     title: String,
     desc: String,
     isDanger: Boolean = false,
+    badgeDot: Boolean = false,
     onClick: () -> Unit
 ) {
     Row(
@@ -661,12 +921,25 @@ private fun DataRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = if (isDanger) Error else TextPrimary
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDanger) Error else TextPrimary
+                )
+                if (badgeDot) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF4CAF50))
+                    )
+                }
+            }
             Text(text = desc, fontSize = 12.sp, color = TextPlaceholder)
         }
         Text(

@@ -163,15 +163,13 @@ class SettingsViewModel(
     private fun loadStorageStatus() {
         viewModelScope.launchWithErrorFeedback("操作失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {
             val status = repository.getStorageStatus()
-            val ratio = if (status.limitSize > 0) {
-                (status.currentSize.toDouble() / status.limitSize * 100).toInt()
-            } else 0
+            val sizeKb = (status.currentSize + 1023) / 1024
             _uiState.update {
                 it.copy(
                     storageInfo = StorageInfo(
-                        currentKB = status.currentSize.toString(),
-                        limitKB = status.limitSize.toString(),
-                        ratio = ratio
+                        currentKB = sizeKb.toString(),
+                        limitKB = "",
+                        ratio = 0
                     )
                 )
             }

@@ -161,8 +161,18 @@ class WeeklyViewModel(
                         reportText = Calculator.generateWeekReportText(weekSummary, weekRange)
                     )
                 }
+                lastWeekSummary = weekSummary
+                currentWeekRange = weekRange
             }
         }
+    }
+
+    private var lastWeekSummary: Calculator.WeekSummary? = null
+    private var currentWeekRange: String = ""
+
+    fun getReportText(includeMicros: Boolean = true): String {
+        val summary = lastWeekSummary ?: return _uiState.value.reportText
+        return Calculator.generateWeekReportText(summary, currentWeekRange, includeMicros)
     }
 
     // ==================== 周切换 ====================

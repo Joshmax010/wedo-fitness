@@ -19,9 +19,19 @@ class AppearancePreferences(context: Context) {
     )
         private set
 
+    var showMicronutrients by mutableStateOf(
+        preferences.getBoolean("show_micronutrients", false)
+    )
+        private set
+
     fun select(mode: ThemeMode) {
         preferences.edit { putString("theme", mode.name) }
         this.mode = mode
+    }
+
+    fun updateShowMicronutrients(show: Boolean) {
+        preferences.edit { putBoolean("show_micronutrients", show) }
+        this.showMicronutrients = show
     }
     /** Local, persistent deduplication; imports never invoke these methods. */
     fun claimCompletion(date: String, wholeDay: Boolean): Boolean {

@@ -2,7 +2,7 @@
 
 > 本文档记录项目当前实际情况、技术架构、已实现功能与变更历史，供后续接手、升级或调整时参考。每次新增功能或做重大调整时，请在「变更历史」表格**顶部**插入新记录（最新变更排在最上方）。
 
-**当前维护状态（2026-11-12）**：**0.2.2（versionCode 10）**。全套 149 个 JVM 单元测试 100% 通过，已构建官方正式签名 APK。正式发布结果、签名与校验信息见 [维护操作说明](./MAINTENANCE.md)。
+**当前维护状态（2026-11-15）**：**0.2.3（versionCode 11）**。全套单元测试 100% 通过，已构建官方正式签名 APK。正式发布结果、签名与校验信息见 [维护操作说明](./MAINTENANCE.md)。
 
 ---
 
@@ -374,7 +374,7 @@ Windows 本地连接调试设备后，可单独运行仓库集成测试：
 
 ### 7.5 本轮底层优化与 UI 改版的统一回归
 
-完整拉取、编译、设备测试命令和手工检查项见 [`LOCAL_REGRESSION_CHECKLIST.md`](./LOCAL_REGRESSION_CHECKLIST.md)。全套 149 个 JVM 单元测试 100% 通过，Lint 0 错误，已构建官方正式签名 APK。发布版本为 **0.2.2（versionCode 10）**，数据库保持 v4，备份 Schema 保持 v3；验证证据统一见 [`CLOUD_VALIDATION.md`](./CLOUD_VALIDATION.md)。
+完整拉取、编译、设备测试命令和手工检查项见 [`LOCAL_REGRESSION_CHECKLIST.md`](./LOCAL_REGRESSION_CHECKLIST.md)。全套单元测试 100% 通过，Lint 0 错误，已构建官方正式签名 APK。发布版本为 **0.2.3（versionCode 11）**，数据库保持 v4，备份 Schema 保持 v3；验证证据统一见 [`CLOUD_VALIDATION.md`](./CLOUD_VALIDATION.md)。
 
 ---
 
@@ -385,7 +385,7 @@ Windows 本地连接调试设备后，可单独运行仓库集成测试：
 3. **审核定位**：工具型应用，不涉及用户隐私采集、虚拟支付、社交功能。
 4. **数据库迁移**：从 v1 升级到 v2 使用 `MIGRATION_1_2`，已保留老数据。后续新增字段请继续编写 Migration，避免使用 `fallbackToDestructiveMigration` 导致数据丢失。
 5. **备份兼容性**：`BackupManager` 已处理旧版备份的导入容错。
-6. **版本号维护约定**：发布时同步 `app/build.gradle.kts` 的递增 `versionCode` / `versionName`、`NutrientConstants.APP_VERSION`（关于页展示与备份 meta 默认值）、README 与变更历史。本次为 versionCode 10 / versionName "0.2.2"。应用版本、Room 数据库版本和备份 Schema 各自维护，不因 UI 变更提高数据库或 Schema 版本。
+6. **版本号维护约定**：发布时同步 `app/build.gradle.kts` 的递增 `versionCode` / `versionName`、`NutrientConstants.APP_VERSION`（关于页展示与备份 meta 默认值）、README 与变更历史。本次为 versionCode 11 / versionName "0.2.3"。应用版本、Room 数据库版本和备份 Schema 各自维护，不因 UI 变更提高数据库或 Schema 版本。
 7. **CLI 临时目录限制**：命令行构建若不覆盖 `java.io.tmpdir` / `org.sqlite.tmpdir`（TEMP 指向 `C:\WINDOWS\TEMP` 时），Room 2.8.4 的 KSP 查询校验器会抛 `ExceptionInInitializerError`；Android Studio 内构建不受影响。
 
 ---
@@ -394,6 +394,7 @@ Windows 本地连接调试设备后，可单独运行仓库集成测试：
 
 | 日期 | 版本 | 变更内容 | 涉及文件 |
 |------|------|----------|----------|
+| 2026-11-15 | 0.2.3 | 官方品牌升级与阶段一瘦身：① 全新 W-沙拉碗官方自适应桌面图标；② 顶栏 WeDo 品牌微胶囊（WeDoBrandBadge）与沉浸式官方面板（BrandBottomSheet）；③ 阶段一瘦身：移除 100MB 伪存储告警、开屏 Emoji 遮罩，记饭阻塞弹窗消除实现即点即存；④ 微量元素按需折叠（设置提供开关，默认完全隐藏）；⑤ 方案 B 自动检测版本更新（零额外依赖、双节点静默探测、无感绿点提示、完全离线隐私开关）；全套测试 100% 通过。 | `app/build.gradle.kts`, `AndroidManifest.xml`, `version.json`, `updater/UpdateManager.kt`, `ui/components/BrandComponents.kt`, `ui/MainScreen.kt`, `ui/screens/*.kt`, `mipmap-*/ic_launcher*` |
 | 2026-11-12 | 0.2.2 | 视觉与审美质感重塑：① 卡片浮雕层级，浅灰背景（#F5F6F8）+ 纯白卡片（#FFFFFF）+ 1dp 弱环境阴影；② 深色模式对比拉伸；③ 鲜活高饱和营养素色谱（蛋白 #5B8DEF、脂肪 #EFA030、碳水 #41B876）；④ 录入页餐次切换重构为包裹式圆角滑块胶囊（Pill Tab）；⑤ 移除空状态系统 Emoji（🍽️、📊），替换为灰线矢量 Material Icons；⑥ 总览页间距拉伸至 16dp，设置页底栏防遮挡留白 80dp；⑦ 餐次卡片 Spring 阻尼回弹微交互；全套 149 个单元测试 100% 通过。 | `ui/theme/Color.kt`, `ui/theme/Theme.kt`, `ui/screens/{HomeScreen,RecordScreen,WeeklyScreen,SettingsScreen,FoodTemplateScreen,BodyStatsScreen}.kt`, `ui/components/MealCard.kt`, `build.gradle.kts`, `NutrientConstants.kt`, `CHANGELOG.md`, `README.md` |
 | 2026-11-12 | 0.2.1 | 交互精简与动效对齐：① 食物模板标题折叠动效（32sp 吸顶折叠至 20sp）；② 食物模板滚动浮现回到顶部 FAB；③ 移除所有页面小字副标题；④ 设置枚举结构简化；⑤ 版本号规范调整为 0.2.1（Alpha/预览体验版阶段）。 | `ui/screens/FoodTemplateScreen.kt`, `viewmodel/SettingsViewModel.kt`, `ui/screens/*.kt`, `CHANGELOG.md` |
 

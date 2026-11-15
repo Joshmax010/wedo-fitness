@@ -47,7 +47,6 @@ import com.example.nutrition.NutritionApp
 import com.example.nutrition.domain.model.MealKey
 import com.example.nutrition.domain.usecase.DateUtils
 import com.example.nutrition.ui.components.BarProgress
-import com.example.nutrition.ui.components.GuideOverlay
 import com.example.nutrition.ui.components.DateNavigationBar
 import com.example.nutrition.ui.components.MealCard
 import com.example.nutrition.ui.components.RingProgress
@@ -89,6 +88,7 @@ fun HomeScreen(
     }
 
     val context = LocalContext.current
+    val showMicronutrients = com.example.nutrition.ui.theme.LocalAppearance.current.showMicronutrients
 
     val listState = rememberLazyListState()
     com.example.nutrition.ui.navigation.TrackRootTitleScroll {
@@ -128,12 +128,6 @@ fun HomeScreen(
             }
             uiState.metadataError?.let { message ->
                 item { DataLoadError(message, viewModel::checkFirstUse) }
-            }
-            // 存储容量告警横幅
-            uiState.storageWarn?.let { warn ->
-                item {
-                    StorageWarnBanner(warn.message)
-                }
             }
 
             // 日期栏
@@ -215,7 +209,7 @@ fun HomeScreen(
                 }
 
                 // 微量营养素网格
-                if (uiState.micros.isNotEmpty()) {
+                if (showMicronutrients && uiState.micros.isNotEmpty()) {
                     item {
                         DashboardCard(title = "微量营养素") {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -253,33 +247,10 @@ fun HomeScreen(
                 }
             }
         }
-
-        // 首次使用引导
-        GuideOverlay(
-            visible = uiState.showGuide,
-            onFinish = { viewModel.onGuideFinish() }
-        )
     }
 }
 
 // ==================== 子组件 ====================
-
-@Composable
-private fun StorageWarnBanner(message: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(6.dp))
-            .background(Warning.copy(alpha = 0.15f))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = message,
-            fontSize = 12.sp,
-            color = Warning
-        )
-    }
-}
 
 @Composable
 private fun DateNavigationBar(

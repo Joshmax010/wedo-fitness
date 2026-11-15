@@ -128,7 +128,7 @@ fun RecordScreen(
     }
 
     // 一次性事件（Toast）
-    ObserveUiEvents(viewModel.events, blocked = uiState.pendingTemplate != null || uiState.deleteConfirm != null || uiState.showNutrientPicker)
+    ObserveUiEvents(viewModel.events, blocked = uiState.deleteConfirm != null || uiState.showNutrientPicker)
 
     Box(
         modifier = Modifier
@@ -278,127 +278,6 @@ fun RecordScreen(
                     }
                 }
             )
-        }
-
-        // ========== 保存为模板提示弹窗 ==========
-        uiState.pendingTemplate?.let { template ->
-            AlertDialog(
-                onDismissRequest = { viewModel.dismissSaveTemplatePrompt() },
-                title = {
-                    Text("保存为模板？", fontWeight = FontWeight.Bold, color = TextPrimary)
-                },
-                text = {
-                    Column {
-                        Text(
-                            "是否将「${template.name}」保存为模板，方便下次快速录入？",
-                            color = TextSecondary
-                        )
-                        SaveAsTemplateTagEditor(viewModel = viewModel, uiState = uiState)
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.confirmSaveAsTemplate() }) {
-                        Text("保存", color = Primary, fontWeight = FontWeight.SemiBold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { viewModel.dismissSaveTemplatePrompt() }) {
-                        Text("不了", color = TextSecondary)
-                    }
-                }
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun SaveAsTemplateTagEditor(viewModel: RecordViewModel, uiState: RecordViewModel.UiState) {
-    Column(modifier = Modifier.padding(top = 12.dp)) {
-        Text(
-            text = "标签（可选）",
-            fontSize = 13.sp,
-            color = TextPrimary,
-            fontWeight = FontWeight.Medium
-        )
-
-        if (uiState.saveAsTemplateTags.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                uiState.saveAsTemplateTags.forEach { tag ->
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Primary)
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = tag,
-                            fontSize = 12.sp,
-                            color = com.example.nutrition.ui.theme.TextInverse
-                        )
-                        Text(
-                            text = "×",
-                            fontSize = 14.sp,
-                            color = com.example.nutrition.ui.theme.TextInverse,
-                            modifier = Modifier.clickable { viewModel.removeSaveAsTemplateTag(tag) }
-                        )
-                    }
-                }
-            }
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            OutlinedTextField(
-                value = uiState.newTemplateTagInput,
-                onValueChange = viewModel::onNewTemplateTagInput,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("输入新标签", fontSize = 13.sp, color = TextPlaceholder) },
-                singleLine = true,
-                textStyle = TextStyle(fontSize = 14.sp),
-                colors = nutritionFieldColors(),
-                shape = RoundedCornerShape(8.dp)
-            )
-            OutlinedButton(
-                onClick = { viewModel.addNewTemplateTag() },
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("添加", color = Primary, fontSize = 13.sp)
-            }
-        }
-
-        val available = uiState.allTemplateTags.filter { it !in uiState.saveAsTemplateTags }
-        if (available.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                available.forEach { tag ->
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(BgMain)
-                            .clickable { viewModel.toggleSaveAsTemplateTag(tag) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = tag,
-                            fontSize = 12.sp,
-                            color = TextPrimary
-                        )
-                    }
-                }
-            }
         }
     }
 }
@@ -642,44 +521,46 @@ private fun FormCard(
                 onValueChange = onCarbsInput
             )
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = 0.5.dp
-            )
-
-            // 微量营养素标题
-            Text(
-                text = "微量营养素（选填）",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextSecondary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            // 微量营养素输入行
-            formMicronutrients.forEachIndexed { index, micro ->
-                MicroFormRow(
-                    micro = micro,
-                    onValueChange = { onMicroValueInput(index, it) },
-                    onDelete = { onDeleteMicro(index) }
+            if (com.example.nutrition.ui.theme.LocalAppearance.current.showMicronutrients) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = 0.5.dp
                 )
-            }
 
-            // 添加营养素按钮
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable(onClick = onTogglePicker)
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
+                // 微量营养素标题
                 Text(
-                    text = "+ 添加营养素",
-                    fontSize = 14.sp,
-                    color = Primary,
-                    fontWeight = FontWeight.Medium
+                    text = "微量营养素（选填）",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
+
+                // 微量营养素输入行
+                formMicronutrients.forEachIndexed { index, micro ->
+                    MicroFormRow(
+                        micro = micro,
+                        onValueChange = { onMicroValueInput(index, it) },
+                        onDelete = { onDeleteMicro(index) }
+                    )
+                }
+
+                // 添加营养素按钮
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onTogglePicker)
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+ 添加营养素",
+                        fontSize = 14.sp,
+                        color = Primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             // 按钮区域
