@@ -90,7 +90,7 @@
 - **安装包大小**：约 `2.55 MB`（无臃肿第三方依赖）
 - **系统要求**：Android 8.0（API 26）及以上
 - **下载地址**：[wedo-fitness-v0.2.3.apk](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk)
-- **SHA-256 校验码**：`315bf437182e33bc7b9d0dbe4ddc435aa50efb04f8cd864afd12dc2a9f910347`
+- **SHA-256 校验码**：`06ffba0c74b4a633518b46f5fefd247eb77b6ddde0bfe30348ae189d938ce7df`
 
 ### 安装与升级说明
 
@@ -200,7 +200,7 @@ In an era crowded with account paywalls, trackers, and subscription popups, WeDo
 ### Download
 
 - **Latest Release**: [v0.2.3 APK Download](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk) (~2.55 MB)
-- **SHA-256**: `315bf437182e33bc7b9d0dbe4ddc435aa50efb04f8cd864afd12dc2a9f910347`
+- **SHA-256**: `06ffba0c74b4a633518b46f5fefd247eb77b6ddde0bfe30348ae189d938ce7df`
 
 ### Tech Stack
 
