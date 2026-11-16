@@ -17,3 +17,11 @@ keystore.properties
 
 *.apk
 *.apk.sha256
+
+# 内部维护文档与验收清单（不入公开库）
+*DOCUMENTATION.md
+*CHECKLIST.md
+*VALIDATION.md
+*FEEDBACK*.md
+MAINTENANCE.md
+*.tmp
