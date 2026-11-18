@@ -23,9 +23,9 @@
 在这个充满广告、社交绑定与订阅制的时代，WeDo 坚持回归记账与记录的本质——**轻快、优雅、不打扰、数据完全属于你自己**。无需注册账号，没有开屏广告，核心功能在完全断网的环境下也能流畅运行。你可以轻松按餐次记录每一餐的热量与三大营养素，实时对照每日目标，追踪长期体重与代谢变化趋势。
 
 <p align="center">
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk"><strong>📦 下载最新安装包 v0.2.3</strong></a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.4/wedo-fitness-v0.2.4.apk"><strong>📦 下载最新安装包 v0.2.4</strong></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.3">版本更新日志</a>
+  <a href="https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.4">版本更新日志</a>
   &nbsp;·&nbsp;
   <a href="#english">English Documentation</a>
 </p>
@@ -86,11 +86,11 @@
 
 ### 最新版本信息
 
-- **当前版本**：`0.2.3`（versionCode `11`）
-- **安装包大小**：约 `2.55 MB`（无臃肿第三方依赖）
+- **当前版本**：`0.2.4`（versionCode `12`）
+- **安装包大小**：约 `2.10 MB`（无臃肿第三方依赖）
 - **系统要求**：Android 8.0（API 26）及以上
-- **下载地址**：[wedo-fitness-v0.2.3.apk](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk)
-- **SHA-256 校验码**：`06ffba0c74b4a633518b46f5fefd247eb77b6ddde0bfe30348ae189d938ce7df`
+- **下载地址**：[wedo-fitness-v0.2.4.apk](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.4/wedo-fitness-v0.2.4.apk)
+- **SHA-256 校验码**：`fc4cc8d2d5572bde07d37474d05f15496861b330d5e3b9c706350aa16679ed5d`
 
 ### 安装与升级说明
 
@@ -199,8 +199,8 @@ In an era crowded with account paywalls, trackers, and subscription popups, WeDo
 
 ### Download
 
-- **Latest Release**: [v0.2.3 APK Download](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk) (~2.55 MB)
-- **SHA-256**: `06ffba0c74b4a633518b46f5fefd247eb77b6ddde0bfe30348ae189d938ce7df`
+- **Latest Release**: [v0.2.4 APK Download](https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.4/wedo-fitness-v0.2.4.apk) (~2.10 MB)
+- **SHA-256**: `fc4cc8d2d5572bde07d37474d05f15496861b330d5e3b9c706350aa16679ed5d`
 
 ### Tech Stack
 

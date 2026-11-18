@@ -1,7 +1,7 @@
 {
-  "versionCode": 11,
-  "versionName": "0.2.3",
-  "changelog": "WeDo 官方品牌升级与体验优化：\n- 品牌重塑：全新 W-沙拉碗官方自适应图标与顶栏 WeDo 品牌微胶囊\n- 体验精简：移除伪存储告警、开屏 Emoji 遮罩与记餐阻断弹窗\n- 极简专注：微量元素支持设置按需折叠（默认完全隐藏）\n- 自动更新：轻量无依赖双节点静默检测，带完全离线隐私开关",
-  "downloadUrl": "https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.3/wedo-fitness-v0.2.3.apk",
-  "releaseUrl": "https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.3"
+  "versionCode": 12,
+  "versionName": "0.2.4",
+  "changelog": "WeDo 0.2.4 稳定性与体验优化：\n- 数据安全：数字计算全面防护（NaN/Infinity/除零），畸形备份 JSON 导入不再闪退\n- 逻辑修复：模板联想误弹、编辑状态残留、模板编辑丢失微量营养素等状态问题修复\n- 数据修正：修正 9 个预设食物的分类标签错误\n- 无障碍：触控热区加大、读屏语义补齐、长文本截断、弹窗可滚动\n- 性能瘦身：图表绘制对象复用、启用资源压缩，APK 降至 2.10 MB\n- 更新安全：更新链接协议校验与自动检测开关竞态修复",
+  "downloadUrl": "https://github.com/Joshmax010/wedo-fitness/releases/download/v0.2.4/wedo-fitness-v0.2.4.apk",
+  "releaseUrl": "https://github.com/Joshmax010/wedo-fitness/releases/tag/v0.2.4"
 }
