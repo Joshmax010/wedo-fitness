@@ -90,6 +90,13 @@ class UpdateManager(context: Context) {
                 val infoFromPages = probePrimary()
                 val candidate = infoFromPages ?: probeGitHubApi()
 
+                if (!force && !autoCheckEnabled) {
+                    updateAvailable = false
+                    latestInfo = null
+                    lastCheckResult = UpdateResult.Disabled
+                    return@withContext UpdateResult.Disabled
+                }
+
                 val result = if (candidate == null) {
                     UpdateResult.Error("无法获取更新信息")
                 } else if (isNewer(candidate)) {
@@ -121,14 +128,21 @@ class UpdateManager(context: Context) {
             val url = URL(PRIMARY_URL)
             conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
+                instanceFollowRedirects = true
                 connectTimeout = TIMEOUT_MS
                 readTimeout = TIMEOUT_MS
                 setRequestProperty("User-Agent", USER_AGENT)
                 setRequestProperty("Accept", "application/json")
             }
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                val jsonStr = conn.inputStream.bufferedReader().use { it.readText() }
-                jsonParser.decodeFromString<VersionInfo>(jsonStr)
+                val jsonStr = conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+                val info = jsonParser.decodeFromString<VersionInfo>(jsonStr)
+                if (info.versionName.isBlank() && info.versionCode <= 0) return null
+                info.copy(
+                    versionName = info.versionName.trim(),
+                    downloadUrl = sanitizeHttpUrl(info.downloadUrl),
+                    releaseUrl = sanitizeHttpUrl(info.releaseUrl).ifEmpty { DEFAULT_RELEASES_URL }
+                )
             } else {
                 null
             }
@@ -145,23 +159,26 @@ class UpdateManager(context: Context) {
             val url = URL(FALLBACK_URL)
             conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
+                instanceFollowRedirects = true
                 connectTimeout = TIMEOUT_MS
                 readTimeout = TIMEOUT_MS
                 setRequestProperty("User-Agent", USER_AGENT)
                 setRequestProperty("Accept", "application/vnd.github.v3+json")
             }
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                val jsonStr = conn.inputStream.bufferedReader().use { it.readText() }
+                val jsonStr = conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
                 val release = jsonParser.decodeFromString<GitHubRelease>(jsonStr)
                 val rawTag = release.tagName.removePrefix("v").removePrefix("V").trim()
+                if (rawTag.isBlank()) return null
                 val apkAsset = release.assets.firstOrNull { it.name.endsWith(".apk", ignoreCase = true) }
-                val downloadUrl = apkAsset?.browserDownloadUrl ?: release.htmlUrl.orEmpty()
+                val cleanReleaseUrl = sanitizeHttpUrl(release.htmlUrl).ifEmpty { DEFAULT_RELEASES_URL }
+                val downloadUrl = sanitizeHttpUrl(apkAsset?.browserDownloadUrl).ifEmpty { cleanReleaseUrl }
                 VersionInfo(
                     versionCode = 0,
                     versionName = rawTag,
                     changelog = release.body.orEmpty(),
                     downloadUrl = downloadUrl,
-                    releaseUrl = release.htmlUrl ?: "https://github.com/Joshmax010/wedo-fitness/releases/latest"
+                    releaseUrl = cleanReleaseUrl
                 )
             } else {
                 null
@@ -171,6 +188,13 @@ class UpdateManager(context: Context) {
         } finally {
             conn?.disconnect()
         }
+    }
+
+    private fun sanitizeHttpUrl(raw: String?): String {
+        val trimmed = raw?.trim().orEmpty()
+        return if (trimmed.startsWith("https://", ignoreCase = true) ||
+            trimmed.startsWith("http://", ignoreCase = true)
+        ) trimmed else ""
     }
 
     fun isNewer(remote: VersionInfo): Boolean {
@@ -186,6 +210,7 @@ class UpdateManager(context: Context) {
         private const val KEY_AUTO_CHECK = "auto_check_update"
         private const val PRIMARY_URL = "https://joshmax010.github.io/wedo-fitness/version.json"
         private const val FALLBACK_URL = "https://api.github.com/repos/Joshmax010/wedo-fitness/releases/latest"
+        private const val DEFAULT_RELEASES_URL = "https://github.com/Joshmax010/wedo-fitness/releases/latest"
         private const val TIMEOUT_MS = 2500
         private const val USER_AGENT = "WeDo-Fitness-Android"
 

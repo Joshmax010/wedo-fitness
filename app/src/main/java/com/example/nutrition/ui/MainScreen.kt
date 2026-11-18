@@ -1,9 +1,6 @@
 package com.example.nutrition.ui
 
 import com.example.nutrition.ui.components.FeedbackOverlay
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,11 +13,9 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +24,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -51,10 +45,8 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -190,7 +182,7 @@ fun MainScreen() {
                                     chrome.visible = true
                                 },
                                 icon = { Icon(if (selected) item.selectedIcon else item.unselectedIcon, contentDescription = item.displayName) },
-                                label = { Text(item.displayName) },
+                                label = { Text(item.displayName, maxLines = 1, softWrap = false) },
                                 colors = NavigationBarItemDefaults.colors(
                                     selectedIconColor = TabSelected, selectedTextColor = TabSelected,
                                     unselectedIconColor = TabUnselected, unselectedTextColor = TabUnselected,

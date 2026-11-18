@@ -1,9 +1,8 @@
 package com.example.nutrition.ui.screens
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
@@ -60,18 +59,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.NutritionApp
 import com.example.nutrition.domain.model.ActivityLevel
 import com.example.nutrition.domain.model.Gender
 import com.example.nutrition.domain.usecase.BackupManager
+import com.example.nutrition.domain.usecase.UnitConverter
 import com.example.nutrition.ui.components.NutrientPicker
 import com.example.nutrition.ui.theme.BgCard
 import com.example.nutrition.ui.theme.BgMain
@@ -500,8 +501,8 @@ private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.U
                                     latest.releaseUrl.ifBlank { "https://github.com/Joshmax010/wedo-fitness/releases" }
                                 }
                                 try {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                                } catch (_: ActivityNotFoundException) {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                                } catch (_: Exception) {
                                     Toast.makeText(context, "未找到可用浏览器", Toast.LENGTH_SHORT).show()
                                 }
                             },
@@ -593,8 +594,8 @@ private fun AboutCard(viewModel: SettingsViewModel, uiState: SettingsViewModel.U
                     .clip(RoundedCornerShape(8.dp))
                     .clickable {
                         try {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Joshmax010/wedo-fitness")))
-                        } catch (_: ActivityNotFoundException) {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Joshmax010/wedo-fitness".toUri()))
+                        } catch (_: Exception) {
                             Toast.makeText(context, "未找到可用浏览器", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -658,15 +659,20 @@ private fun ImportModal(viewModel: SettingsViewModel, uiState: SettingsViewModel
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("导入数据", fontWeight = FontWeight.Bold, color = TextPrimary)
-                Text(
-                    text = "×",
-                    fontSize = 22.sp,
-                    color = TextSecondary,
+                Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { viewModel.hideImport() }
-                        .padding(4.dp)
-                )
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .clickable(role = Role.Button) { viewModel.hideImport() }
+                        .semantics { contentDescription = "关闭导入弹窗" },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "×",
+                        fontSize = 22.sp,
+                        color = TextSecondary
+                    )
+                }
             }
         },
         text = {
@@ -752,7 +758,7 @@ private fun ImportModal(viewModel: SettingsViewModel, uiState: SettingsViewModel
 
 @Composable
 private fun ImportPreviewContent(preview: BackupManager.BackupPreview) {
-    Column {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         Text(
             text = "数据概览",
             fontSize = 15.sp,
@@ -776,8 +782,8 @@ private fun ImportPreviewContent(preview: BackupManager.BackupPreview) {
             PreviewDetail("日期范围", "${preview.earliestDate} ~ ${preview.latestDate}")
         }
         if (preview.hasTargets) {
-            preview.targetCalories?.let { PreviewDetail("热量目标", "$it kcal") }
-            preview.targetProtein?.let { PreviewDetail("蛋白质目标", "$it g") }
+            preview.targetCalories?.let { PreviewDetail("热量目标", "${UnitConverter.formatNutrient(it)} kcal") }
+            preview.targetProtein?.let { PreviewDetail("蛋白质目标", "${UnitConverter.formatNutrient(it)} g") }
         }
         if (preview.templateCount > 0) {
             PreviewDetail("自定义模板", "${preview.templateCount} 个")
@@ -794,10 +800,10 @@ private fun ImportPreviewContent(preview: BackupManager.BackupPreview) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(top = 12.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(Error.copy(alpha = 0.08f))
                 .padding(10.dp)
-                .padding(top = 12.dp)
         ) {
             Text(
                 text = "确认导入将覆盖当前数据，此操作不可撤销",
@@ -854,9 +860,10 @@ private fun MicroTargetRow(
             )
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable(onClick = onDelete)
-                    .padding(6.dp),
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(role = Role.Button, onClick = onDelete)
+                    .semantics { contentDescription = "删除${micro.name}目标" },
                 contentAlignment = Alignment.Center
             ) {
                 Text("×", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Error)
@@ -956,10 +963,16 @@ private fun AboutRow(label: String, value: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(label, fontSize = 14.sp, color = TextSecondary)
-        Text(value, fontSize = 14.sp, color = TextPrimary)
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = TextPrimary,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -1030,6 +1043,7 @@ private fun BodyProfileCard(viewModel: SettingsViewModel, uiState: SettingsViewM
                 unit = "岁",
                 value = uiState.age,
                 placeholder = "25",
+                keyboardType = KeyboardType.Number,
                 onValueChange = viewModel::onAgeInput
             )
             NutritionField(
@@ -1122,9 +1136,9 @@ private fun CalculationDialog(viewModel: SettingsViewModel, uiState: SettingsVie
                 HorizontalDivider(thickness = 0.5.dp)
                 Spacer(modifier = Modifier.height(12.dp))
                 PreviewDetail("热量", "${targets.calories.toInt()} kcal")
-                PreviewDetail("蛋白质", "${targets.protein} g")
-                PreviewDetail("脂肪", "${targets.fat} g")
-                PreviewDetail("碳水", "${targets.carbs} g")
+                PreviewDetail("蛋白质", "${UnitConverter.formatNutrient(targets.protein)} g")
+                PreviewDetail("脂肪", "${UnitConverter.formatNutrient(targets.fat)} g")
+                PreviewDetail("碳水", "${UnitConverter.formatNutrient(targets.carbs)} g")
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "注：推荐值基于 Mifflin-St Jeor 公式估算，仅供参考。",

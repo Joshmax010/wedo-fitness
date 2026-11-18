@@ -79,6 +79,7 @@ class WeeklyViewModel(
         val nutrientRates: List<NutrientRateRow> = emptyList(),
         val microTable: List<MicroRow> = emptyList(),
         val reportText: String = "",
+        val canGoNext: Boolean = false,
         val dataError: String? = null
     )
 
@@ -109,11 +110,13 @@ class WeeklyViewModel(
                 (targets ?: NutrientConstants.getDefaultTargets()) to records
             }.collect { (targets, allRecords) ->
                 val weekSummary = Calculator.calcWeekSummary(allRecords, weekDates, targets)
+                val currentMonday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
                 _uiState.update {
                     it.copy(
                         dataError = null,
                         weekRange = weekRange,
+                        canGoNext = monday < currentMonday,
                         targetCalories = targets.calories,
                         hasData = weekSummary.avgCalories > 0 ||
                             weekSummary.dailyData.any { day -> day.calories > 0 },

@@ -60,18 +60,24 @@ class BodyStatsViewModel(
 
     private var dataJob: Job? = null
     private var dateJob: Job? = null
+    private var initialDateLoaded = false
     private val editedDateFields = mutableSetOf<String>()
 
     init { initialize() }
 
     fun initialize() {
-        if (dataJob?.isActive == true) return
-        dataJob = viewModelScope.launchWithErrorFeedback("读取身体记录失败，请重试", { message ->
-            _uiState.update { state -> state.copy(dataError = message) }
-        }) {
-            repository.getAllBodyRecords().collect { list ->
-                _uiState.update { state -> state.copy(records = list.sortedBy { it.dateStr }, dataError = null) }
+        if (dataJob?.isActive != true) {
+            dataJob = viewModelScope.launchWithErrorFeedback("读取身体记录失败，请重试", { message ->
+                _uiState.update { state -> state.copy(dataError = message) }
+            }) {
+                repository.getAllBodyRecords().collect { list ->
+                    _uiState.update { state -> state.copy(records = list.sortedBy { it.dateStr }, dataError = null) }
+                }
             }
+        }
+        if (!initialDateLoaded) {
+            initialDateLoaded = true
+            selectDate(_uiState.value.selectedDate)
         }
     }
 
@@ -106,7 +112,7 @@ class BodyStatsViewModel(
         if (changedDate) editedDateFields.clear()
         _uiState.update { state ->
             state.copy(
-                selectedDate = dateStr, showDatePicker = false,
+                selectedDate = dateStr, showDatePicker = false, dateError = null,
                 editing = if (changedDate) false else state.editing,
                 weight = if (changedDate) "" else state.weight,
                 bodyFat = if (changedDate) "" else state.bodyFat,
@@ -185,7 +191,10 @@ class BodyStatsViewModel(
         viewModelScope.launchWithErrorFeedback("操作失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {
             when (val result = repository.saveBodyRecord(record)) {
                 is Resource.Error -> sendEvent(UIEvent.ShowToast(result.message))
-                is Resource.Success -> sendEvent(UIEvent.SaveSuccess())
+                is Resource.Success -> {
+                    _uiState.update { it.copy(editing = true) }
+                    sendEvent(UIEvent.SaveSuccess())
+                }
             }
         }
     }
@@ -202,7 +211,15 @@ class BodyStatsViewModel(
         viewModelScope.launchWithErrorFeedback("操作失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {
             when (val result = repository.deleteBodyRecord(date)) {
                 is Resource.Error -> sendEvent(UIEvent.ShowToast(result.message))
-                is Resource.Success -> sendEvent(UIEvent.ShowToast("已删除"))
+                is Resource.Success -> {
+                    if (_uiState.value.selectedDate == date) {
+                        editedDateFields.clear()
+                        _uiState.update {
+                            it.copy(editing = false, weight = "", bodyFat = "", muscle = "", note = "")
+                        }
+                    }
+                    sendEvent(UIEvent.ShowToast("已删除"))
+                }
             }
         }
     }

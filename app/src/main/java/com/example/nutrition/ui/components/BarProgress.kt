@@ -42,6 +42,7 @@ import com.example.nutrition.ui.theme.TextSecondary
 import com.example.nutrition.ui.theme.Warning
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * 条形进度组件 —— 对应小程序 bar-progress 组件
@@ -71,11 +72,12 @@ fun BarProgress(
     warningThreshold: Float = 80f
 ) {
     val trackColor = com.example.nutrition.ui.theme.BgTag
-    // 计算进度
-    val rawPercent = if (target > 0) (current / target * 100).toInt() else 0
+    val safeCurrent = if (current.isFinite() && current >= 0.0) current else 0.0
+    val safeTarget = if (target.isFinite() && target >= 0.0) target else 0.0
+    val rawPercent = if (safeTarget > 0) (safeCurrent / safeTarget * 100).roundToInt() else 0
     val isOverflow = rawPercent > 100
     val isWarning = !isOverflow && rawPercent >= warningThreshold
-    val displayPercent = min(rawPercent, 100)
+    val displayPercent = min(rawPercent, 100).coerceAtLeast(0)
 
     val barColor = when {
         isOverflow -> overflowColor
@@ -85,17 +87,17 @@ fun BarProgress(
 
     // 数值滚动动画
     val animatedCurrent by animateIntAsState(
-        targetValue = (current * 10).toInt(),
+        targetValue = (safeCurrent * 10).roundToInt(),
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
         label = "barCurrent"
     )
     val displayCurrent = animatedCurrent / 10.0
 
     // 剩余量文本
-    val remaining = ((target - current) * 10).toInt() / 10.0
+    val remaining = ((safeTarget - safeCurrent) * 10).roundToInt() / 10.0
     val remainingText = when {
-        remaining > 0 -> "剩 $remaining$unit"
-        remaining < 0 -> "超 ${abs(remaining)}$unit"
+        remaining > 0 -> "剩 ${UnitConverter.formatNutrient(remaining)}$unit"
+        remaining < 0 -> "超 ${UnitConverter.formatNutrient(abs(remaining))}$unit"
         else -> "已达标"
     }
 
@@ -171,7 +173,7 @@ fun BarProgress(
             // 填充条
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(fraction = displayPercent / 100f)
+                    .fillMaxWidth(fraction = (displayPercent / 100f).coerceIn(0f, 1f))
                     .height(trackHeight)
                     .clip(RoundedCornerShape(cornerRadius))
                     .drawBehind {
@@ -182,7 +184,6 @@ fun BarProgress(
                             val stripeWidth = 10.dp.toPx()
                             val stripeGap = 10.dp.toPx()
                             val totalStripe = stripeWidth + stripeGap
-                            drawRect(color = barColor)
                             // 45度条纹
                             val h = this.size.height
                             val w = this.size.width

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -41,6 +42,9 @@ fun CaloriesLineChart(
     val lineColor = Primary
     val targetColor = Warning
     val pointColor = com.example.nutrition.ui.theme.BgCard
+    val textPaint = remember {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "每日热量摄入",
@@ -85,18 +89,16 @@ fun CaloriesLineChart(
                     strokeWidth = 1f
                 )
                 // Y 轴标签
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        yVal.toString(),
-                        leftPad - 4.dp.toPx(),
-                        y + 4.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = labelColor.toArgb()
-                            textSize = 9.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.RIGHT
-                        }
-                    )
-                }
+                drawContext.canvas.nativeCanvas.drawText(
+                    yVal.toString(),
+                    leftPad - 4.dp.toPx(),
+                    y + 4.dp.toPx(),
+                    textPaint.apply {
+                        color = labelColor.toArgb()
+                        textSize = 9.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.RIGHT
+                    }
+                )
             }
 
             // 目标虚线
@@ -112,18 +114,16 @@ fun CaloriesLineChart(
                     )
                 )
                 // 目标标签
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        "目标 ${targetCalories.toInt()}",
-                        size.width - rightPad - 2.dp.toPx(),
-                        targetY - 4.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = targetColor.toArgb()
-                            textSize = 9.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.RIGHT
-                        }
-                    )
-                }
+                drawContext.canvas.nativeCanvas.drawText(
+                    "目标 ${targetCalories.toInt()}",
+                    size.width - rightPad - 2.dp.toPx(),
+                    targetY - 4.dp.toPx(),
+                    textPaint.apply {
+                        color = targetColor.toArgb()
+                        textSize = 9.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.RIGHT
+                    }
+                )
             }
 
             // X 轴数据点坐标
@@ -185,33 +185,29 @@ fun CaloriesLineChart(
                 )
 
                 // X 轴标签
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        points[index].label,
-                        point.x,
-                        topPad + chartH + 16.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = labelColor.toArgb()
-                            textSize = 9.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.CENTER
-                        }
-                    )
-                }
+                drawContext.canvas.nativeCanvas.drawText(
+                    points[index].label,
+                    point.x,
+                    topPad + chartH + 16.dp.toPx(),
+                    textPaint.apply {
+                        color = labelColor.toArgb()
+                        textSize = 9.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.CENTER
+                    }
+                )
 
                 // 热量值标注（仅在有数据时显示）
                 if (points[index].calories > 0) {
-                    drawContext.canvas.nativeCanvas.apply {
-                        drawText(
-                            points[index].calories.toString(),
-                            point.x,
-                            point.y - 6.dp.toPx(),
-                            android.graphics.Paint().apply {
-                                color = lineColor.toArgb()
-                                textSize = 8.sp.toPx()
-                                textAlign = android.graphics.Paint.Align.CENTER
-                            }
-                        )
-                    }
+                    drawContext.canvas.nativeCanvas.drawText(
+                        points[index].calories.toString(),
+                        point.x,
+                        point.y - 6.dp.toPx(),
+                        textPaint.apply {
+                            color = lineColor.toArgb()
+                            textSize = 8.sp.toPx()
+                            textAlign = android.graphics.Paint.Align.CENTER
+                        }
+                    )
                 }
             }
         }

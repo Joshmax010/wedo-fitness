@@ -1,9 +1,9 @@
 package com.example.nutrition.ui.theme
 
-import android.graphics.Color as AndroidColor
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.core.graphics.toColorInt
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
@@ -69,10 +69,10 @@ fun NutritionTheme(content: @Composable () -> Unit) {
     val colors = if (dark) DarkColors else LightColors
     DisposableEffect(context, dark) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { dark },
+            statusBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT) { dark },
             navigationBarStyle = SystemBarStyle.auto(
-                AndroidColor.parseColor("#F5F6F8"),
-                AndroidColor.parseColor("#111113")
+                "#F5F6F8".toColorInt(),
+                "#111113".toColorInt()
             ) { dark }
         )
         onDispose { }

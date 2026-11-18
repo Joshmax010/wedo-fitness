@@ -14,11 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FoodBank
@@ -37,12 +33,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.NutritionApp
 import com.example.nutrition.domain.model.MealKey
 import com.example.nutrition.domain.usecase.DateUtils
@@ -52,8 +45,6 @@ import com.example.nutrition.ui.components.MealCard
 import com.example.nutrition.ui.components.RingProgress
 import com.example.nutrition.ui.theme.BgCard
 import com.example.nutrition.ui.theme.BgMain
-import com.example.nutrition.ui.theme.BgTag
-import com.example.nutrition.ui.theme.Error
 import com.example.nutrition.ui.theme.CarbsColor
 import com.example.nutrition.ui.theme.FatColor
 import com.example.nutrition.ui.theme.ProteinColor
@@ -61,8 +52,6 @@ import com.example.nutrition.ui.theme.Primary
 import com.example.nutrition.ui.theme.TextInverse
 import com.example.nutrition.ui.theme.TextPlaceholder
 import com.example.nutrition.ui.theme.TextPrimary
-import com.example.nutrition.ui.theme.TextSecondary
-import com.example.nutrition.ui.theme.Warning
 import com.example.nutrition.viewmodel.HomeViewModel
 import java.time.LocalDate
 
@@ -251,74 +240,6 @@ fun HomeScreen(
 }
 
 // ==================== 子组件 ====================
-
-@Composable
-private fun DateNavigationBar(
-    dateStr: String,
-    isToday: Boolean,
-    onPrev: () -> Unit,
-    onNext: () -> Unit,
-    onDateClick: () -> Unit = {}
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 前一天
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(BgCard)
-                .clickable(onClick = onPrev),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "‹", fontSize = 22.sp, color = TextPrimary)
-        }
-
-        // 日期 + 今天标签
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .clickable(onClick = onDateClick)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = dateStr,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
-            )
-            if (isToday) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 6.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Primary.copy(alpha = 0.15f))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(text = "今天", fontSize = 10.sp, color = Primary)
-                }
-            }
-        }
-
-        // 后一天
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(BgCard)
-                .clickable(onClick = onNext),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "›", fontSize = 22.sp, color = TextPrimary)
-        }
-    }
-}
 
 @Composable
 private fun EmptyState(onRecord: () -> Unit) {

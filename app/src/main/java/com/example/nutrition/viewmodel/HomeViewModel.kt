@@ -83,6 +83,7 @@ class HomeViewModel(
 
     init { loadData() }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun loadData() {
         if (dataJob?.isActive == true) return
         dataJob = viewModelScope.launchWithErrorFeedback("读取首页数据失败，请重试", {

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -81,16 +82,18 @@ fun AppNavGraph(navController: NavHostController) {
             exitTransition = tabExit,
             popEnterTransition = tabEnter,
             popExitTransition = tabExit
-        ) {
+        ) { entry ->
             HomeScreen(
                 onNavigateToRecord = { mealKey, date ->
-                    navController.navigate(RecordRoute(mealKey = mealKey?.key, date = date)) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    if (entry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+                        navController.navigate(RecordRoute(mealKey = mealKey?.key, date = date)) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            // Explicit date arguments must not be replaced by a restored route's arguments.
+                            restoreState = false
                         }
-                        launchSingleTop = true
-                        // Explicit date arguments must not be replaced by a restored route's arguments.
-                        restoreState = false
                     }
                 }
             )
@@ -117,13 +120,13 @@ fun AppNavGraph(navController: NavHostController) {
             exitTransition = tabExit,
             popEnterTransition = tabEnter,
             popExitTransition = tabExit
-        ) {
+        ) { entry ->
             SettingsScreen(
-                onNavigateToTemplates = { navController.navigate(TemplatesRoute) },
-                onNavigateToBodyStats = { navController.navigate(BodyStatsRoute) },
-                onNavigateToTargets = { navController.navigate(NutritionSettingsRoute) },
-                onNavigateToData = { navController.navigate(DataSettingsRoute) },
-                onNavigateToAbout = { navController.navigate(AboutRoute) }
+                onNavigateToTemplates = { navController.navigateSingleSafely(entry, TemplatesRoute) },
+                onNavigateToBodyStats = { navController.navigateSingleSafely(entry, BodyStatsRoute) },
+                onNavigateToTargets = { navController.navigateSingleSafely(entry, NutritionSettingsRoute) },
+                onNavigateToData = { navController.navigateSingleSafely(entry, DataSettingsRoute) },
+                onNavigateToAbout = { navController.navigateSingleSafely(entry, AboutRoute) }
             )
         }
 
@@ -146,10 +149,21 @@ fun AppNavGraph(navController: NavHostController) {
     }
 }
 
+private inline fun <reified T : Any> NavHostController.navigateSingleSafely(
+    entry: NavBackStackEntry,
+    route: T
+) {
+    if (entry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+        navigate(route) { launchSingleTop = true }
+    }
+}
+
 /** Subpages share the parent settings draft and its existing save/import logic. */
 @Composable
 private fun settingsViewModel(navController: NavHostController, entry: NavBackStackEntry): SettingsViewModel {
-    val parent = remember(entry) { navController.getBackStackEntry(SettingsRoute) }
+    val parent = remember(entry) {
+        runCatching { navController.getBackStackEntry(SettingsRoute) }.getOrElse { entry }
+    }
     return viewModel(viewModelStoreOwner = parent, factory = NutritionApp.appViewModelFactory { repo, backup ->
         SettingsViewModel(repo, backup)
     })

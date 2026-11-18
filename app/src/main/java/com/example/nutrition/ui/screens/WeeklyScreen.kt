@@ -38,12 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.NutritionApp
 import com.example.nutrition.ui.charts.CaloriesLineChart
 import com.example.nutrition.ui.charts.NutrientBarChart
@@ -56,6 +57,7 @@ import com.example.nutrition.ui.theme.TextSecondary
 import com.example.nutrition.ui.theme.TextPlaceholder
 import com.example.nutrition.viewmodel.WeeklyViewModel
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * 周报页 —— 对应小程序 pages/weekly/weekly.wxml
@@ -95,6 +97,7 @@ fun WeeklyScreen(
             // ========== 周切换栏 ==========
             WeekBar(
                 weekRange = uiState.weekRange,
+                canGoNext = uiState.canGoNext,
                 onPrev = { viewModel.prevWeek() },
                 onNext = { viewModel.nextWeek() }
             )
@@ -111,8 +114,12 @@ fun WeeklyScreen(
                         nutrientRates = uiState.nutrientRates,
                         onCopyReport = {
                             val text = viewModel.getReportText(includeMicros = appearance.showMicronutrients)
-                            copyToClipboard(context, text)
-                            Toast.makeText(context, "周报已复制", Toast.LENGTH_SHORT).show()
+                            val copied = copyToClipboard(context, text)
+                            Toast.makeText(
+                                context,
+                                if (copied) "周报已复制" else "复制失败",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     )
                 }
@@ -147,6 +154,7 @@ fun WeeklyScreen(
 @Composable
 private fun WeekBar(
     weekRange: String,
+    canGoNext: Boolean,
     onPrev: () -> Unit,
     onNext: () -> Unit
 ) {
@@ -163,26 +171,28 @@ private fun WeekBar(
             fontWeight = FontWeight.Bold,
             color = Primary,
             modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .clickable(onClick = onPrev)
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(role = Role.Button, onClick = onPrev)
+                .semantics { contentDescription = "上一周" }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
         Text(
             text = weekRange,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             color = TextPrimary,
-            modifier = Modifier.padding(horizontal = 20.dp)
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
         Text(
             text = "›",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = Primary,
+            color = if (canGoNext) Primary else Primary.copy(alpha = 0.28f),
             modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .clickable(onClick = onNext)
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(enabled = canGoNext, role = Role.Button, onClick = onNext)
+                .semantics { contentDescription = "下一周" }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }
@@ -266,7 +276,7 @@ private fun SummaryCard(
                 summary.avgCalories.toString() to "日均热量(kcal)",
                 summary.avgProtein.toString() to "日均蛋白质(g)",
                 "${summary.achievementDays}/7" to "达标天数",
-                summary.totalGap.toInt().toString() to "热量缺口(kcal)"
+                (if (summary.totalGap.isFinite()) summary.totalGap.roundToInt() else 0).toString() to "热量缺口(kcal)"
             )
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 metrics.chunked(2).forEach { row ->
@@ -347,8 +357,9 @@ private fun NutrientRateRow(rate: WeeklyViewModel.NutrientRateRow) {
                 .clip(RoundedCornerShape(4.dp))
                 .background(com.example.nutrition.ui.theme.BgTag)
         ) {
-            val fillPercent = min(rate.rate, 100.0).toFloat() / 100f
-            val fillColor = if (rate.rate > 100) Error else Primary
+            val safeRate = if (rate.rate.isFinite()) rate.rate else 0.0
+            val fillPercent = (min(safeRate, 100.0).toFloat() / 100f).coerceIn(0f, 1f)
+            val fillColor = if (safeRate > 100) Error else Primary
 
             Box(
                 modifier = Modifier
@@ -447,8 +458,14 @@ private fun TableCell(text: String, modifier: Modifier, isHeader: Boolean = fals
 
 // ==================== 辅助函数 ====================
 
-private fun copyToClipboard(context: Context, text: String) {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("营养周报", text)
-    clipboard.setPrimaryClip(clip)
+private fun copyToClipboard(context: Context, text: String): Boolean {
+    return try {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            ?: return false
+        val clip = ClipData.newPlainText("营养周报", text)
+        clipboard.setPrimaryClip(clip)
+        true
+    } catch (_: Exception) {
+        false
+    }
 }

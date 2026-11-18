@@ -486,6 +486,62 @@ class BackupManagerTest {
         assertTrue(result.summary.contains("2000 kcal"))
     }
 
+    // ==================== 畸形 JSON 类型边界防崩溃 ====================
+
+    @Test
+    fun `previewData与importData面对畸形字段类型与非法日期不崩溃`() = runTest {
+        val nonObjRoot = backupManager.previewData("[1, 2, 3]")
+        assertFalse(nonObjRoot.valid)
+
+        val nullDataJson = """{"app":"nutrition-tracker","schemaVersion":3,"data":null}"""
+        assertFalse(backupManager.previewData(nullDataJson).valid)
+        assertFalse(backupManager.importData(nullDataJson).success)
+
+        val badAppTypeJson = """{"app":["nutrition-tracker"],"schemaVersion":3,"data":{}}"""
+        assertFalse(backupManager.previewData(badAppTypeJson).valid)
+
+        val badDateJson = """
+        {
+            "app": "nutrition-tracker",
+            "schemaVersion": 3,
+            "data": {
+                "targets": { "calories": 2000 },
+                "records": { "bad-date": { "breakfast": [] } }
+            }
+        }
+        """.trimIndent()
+        assertFalse(backupManager.previewData(badDateJson).valid)
+        assertFalse(backupManager.importData(badDateJson).success)
+
+        val corruptedFieldsJson = """
+        {
+            "app": "nutrition-tracker",
+            "schemaVersion": 3,
+            "exportedAt": "2026-06-30T10:00:00Z",
+            "data": {
+                "targets": { "calories": 2000 },
+                "records": {
+                    "2026-06-30": {
+                        "breakfast": [{ "name": "异常热量", "calories": "NaN" }]
+                    }
+                },
+                "foodTemplates": [{ "name": "乱码标签", "calories": 100, "tags": [{}, "主食"] }],
+                "bodyRecords": [
+                    { "dateStr": "bad", "weightKg": 70.0 },
+                    { "dateStr": "2026-06-30", "weightKg": -10.0 },
+                    { "dateStr": "2026-06-30", "weightKg": 68.5, "bodyFatPercent": 18.0 }
+                ]
+            }
+        }
+        """.trimIndent()
+        val importResult = backupManager.importData(corruptedFieldsJson)
+        assertTrue(importResult.success)
+        assertEquals(0.0, fakeRepo.getDayRecords("2026-06-30").first().breakfast.single().calories, 0.001)
+        assertEquals(listOf("主食"), fakeRepo.getAllFoodTemplates().first().single().tags)
+        assertEquals(1, fakeRepo.getAllBodyRecords().first().size)
+        assertEquals(68.5, fakeRepo.getAllBodyRecords().first().single().weightKg, 0.001)
+    }
+
     // ==================== FakeRepository ====================
 
     /**
@@ -551,7 +607,12 @@ class BackupManagerTest {
         ): Resource<Unit> {
             val day = records[dateStr] ?: DayRecords(dateStr = dateStr)
             val filtered = day.getMeal(mealKey).filter { it.id != recordId }
-            records[dateStr] = day.withMeal(mealKey, filtered)
+            val updated = day.withMeal(mealKey, filtered)
+            if (updated.isEmpty()) {
+                records.remove(dateStr)
+            } else {
+                records[dateStr] = updated
+            }
             return Resource.Success(Unit)
         }
 

@@ -34,6 +34,19 @@ object DateUtils {
     }
 
     /**
+     * 判断字符串是否为合法的 YYYY-MM-DD 日期
+     */
+    fun isValidIsoDate(dateStr: String): Boolean {
+        if (dateStr.length != 10) return false
+        return try {
+            parseDate(dateStr)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
      * 格式化日期为 MM.dd（用于周报周期显示）
      * 对应 JS: formatShortDate(date)
      */

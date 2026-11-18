@@ -88,4 +88,29 @@ class BodyStatsViewModelTest {
         assertEquals("2026-09-29", viewModel.uiState.value.selectedDate)
         assertEquals("72", viewModel.uiState.value.weight)
     }
+
+    @Test
+    fun initializeLoadsExistingTodayRecord_andSaveAndDeleteUpdateEditingState() = runTest {
+        val today = com.example.nutrition.domain.usecase.DateUtils.today()
+        val repository = BackupManagerTest.FakeRepository()
+        repository.saveBodyRecord(BodyRecord(dateStr = today, weightKg = 69.5, bodyFatPercent = 17.2))
+        val viewModel = BodyStatsViewModel(repository)
+        store.put("body", viewModel)
+        runCurrent()
+
+        assertTrue(viewModel.uiState.value.editing)
+        assertEquals("69.5", viewModel.uiState.value.weight)
+        assertEquals("17.2", viewModel.uiState.value.bodyFat)
+
+        viewModel.requestDelete(today)
+        viewModel.confirmDelete()
+        runCurrent()
+        assertFalse(viewModel.uiState.value.editing)
+        assertEquals("", viewModel.uiState.value.weight)
+
+        viewModel.onWeightInput("70.0")
+        viewModel.saveRecord()
+        runCurrent()
+        assertTrue(viewModel.uiState.value.editing)
+    }
 }

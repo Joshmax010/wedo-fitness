@@ -43,14 +43,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.NutritionApp
 import com.example.nutrition.domain.model.BodyRecord
 import com.example.nutrition.domain.usecase.DateUtils
@@ -64,6 +65,7 @@ import com.example.nutrition.ui.theme.TextPrimary
 import com.example.nutrition.ui.theme.TextSecondary
 import com.example.nutrition.viewmodel.BodyStatsViewModel
 import java.time.LocalDate
+import java.util.Locale
 
 /**
  * 身体记录页
@@ -76,8 +78,6 @@ fun BodyStatsScreen(
         factory = NutritionApp.appViewModelFactory { repo, _ -> BodyStatsViewModel(repo) }
     )
 ) {
-    val context = LocalContext.current
-
     // 页面状态（单一 UiState）
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val chrome = LocalPageChrome.current
@@ -91,6 +91,8 @@ fun BodyStatsScreen(
 
     // 一次性事件（Toast）
     ObserveUiEvents(viewModel.events, blocked = uiState.deleteDate != null)
+    val scrollState = rememberScrollState()
+    com.example.nutrition.ui.navigation.TrackRootTitleScroll { scrollState.value.toFloat() }
 
     Box(
         modifier = Modifier
@@ -100,7 +102,7 @@ fun BodyStatsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(com.example.nutrition.ui.navigation.LocalPageContentPadding.current)
                 .padding(16.dp)
         ) {
@@ -211,7 +213,9 @@ private fun BodyRecordFormCard(
                             parsed.year,
                             parsed.monthValue - 1,
                             parsed.dayOfMonth
-                        ).show()
+                        ).apply {
+                            datePicker.maxDate = System.currentTimeMillis()
+                        }.show()
                     }
                     .padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -275,9 +279,9 @@ private fun BodyRecordItem(
                     color = TextPrimary
                 )
                 Text(
-                    text = "体重 ${String.format("%.1f", record.weightKg)} kg" +
-                        (record.bodyFatPercent?.let { " · 体脂 ${String.format("%.1f", it)}%" } ?: "") +
-                        (record.muscleKg?.let { " · 肌肉 ${String.format("%.1f", it)} kg" } ?: ""),
+                    text = "体重 ${String.format(Locale.US, "%.1f", record.weightKg)} kg" +
+                        (record.bodyFatPercent?.let { " · 体脂 ${String.format(Locale.US, "%.1f", it)}%" } ?: "") +
+                        (record.muscleKg?.let { " · 肌肉 ${String.format(Locale.US, "%.1f", it)} kg" } ?: ""),
                     fontSize = 12.sp,
                     color = TextSecondary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -293,9 +297,10 @@ private fun BodyRecordItem(
             }
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable(onClick = onDelete)
-                    .padding(8.dp),
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable(role = Role.Button, onClick = onDelete)
+                    .semantics { contentDescription = "删除 ${record.dateStr} 身体记录" }
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

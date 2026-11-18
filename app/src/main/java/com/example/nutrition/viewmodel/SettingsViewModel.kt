@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
+import kotlin.math.roundToInt
 
 /**
  * 设置页 ViewModel —— 对应小程序 pages/settings/settings.js
@@ -150,7 +151,7 @@ class SettingsViewModel(
                     gender = if (edited("gender")) state.gender else profile?.gender,
                     age = if (edited("age")) state.age else profile?.age?.toString() ?: "",
                     height = if (edited("height")) state.height else profile?.heightCm?.toString() ?: "",
-                    weight = if (edited("weight")) state.weight else profile?.weightKg?.toString() ?: "",
+                    weight = if (edited("weight")) state.weight else profile?.weightKg?.let(UnitConverter::formatForInput) ?: "",
                     activityLevel = if (edited("activityLevel")) state.activityLevel else profile?.activityLevel
                 )
             }
@@ -223,6 +224,17 @@ class SettingsViewModel(
      */
     fun calculateRecommendations() {
         val state = _uiState.value
+        val hasAny = state.gender != null || state.age.isNotBlank() ||
+            state.height.isNotBlank() || state.weight.isNotBlank() || state.activityLevel != null
+        if (!hasAny) {
+            sendEvent(UIEvent.ShowToast("请完整填写身体档案信息"))
+            return
+        }
+        val profileError = validatePartialBodyProfile(state)
+        if (profileError != null) {
+            sendEvent(UIEvent.ShowToast(profileError))
+            return
+        }
         val profile = buildBodyProfileOrNull(state)
         if (profile == null) {
             sendEvent(UIEvent.ShowToast("请完整填写身体档案信息"))
@@ -233,7 +245,7 @@ class SettingsViewModel(
                 key = mn.key,
                 name = mn.name,
                 unit = mn.unit,
-                target = mn.target.toDoubleOrNull() ?: 0.0
+                target = mn.target.toDoubleOrNull()?.takeIf { it.isFinite() } ?: 0.0
             )
         }
         _uiState.update {
@@ -270,16 +282,33 @@ class SettingsViewModel(
         _uiState.update { it.copy(showCalcDialog = false, calcResult = null) }
     }
 
+    private fun validatePartialBodyProfile(state: UiState): String? {
+        val hasAny = state.gender != null || state.age.isNotBlank() ||
+            state.height.isNotBlank() || state.weight.isNotBlank() || state.activityLevel != null
+        if (!hasAny) return null
+        if (state.gender == null) return "请选择性别"
+        val ageValue = state.age.trim().toIntOrNull()
+        if (ageValue == null || ageValue !in 1..120) return "请输入有效年龄（1-120岁）"
+        val heightValue = state.height.trim().toDoubleOrNull()?.takeIf { it.isFinite() }?.roundToInt()
+        if (heightValue == null || heightValue !in 50..300) return "请输入有效身高（50-300cm）"
+        val weightValue = state.weight.trim().toDoubleOrNull()
+        if (weightValue == null || !weightValue.isFinite() || weightValue <= 0.0 || weightValue > 500.0) {
+            return "请输入有效体重（0-500kg）"
+        }
+        if (state.activityLevel == null) return "请选择活动量"
+        return null
+    }
+
     private fun buildBodyProfileOrNull(state: UiState): BodyProfile? {
         val selectedGender = state.gender ?: return null
-        val ageValue = state.age.toIntOrNull() ?: return null
-        val heightValue = state.height.toIntOrNull() ?: return null
-        val weightValue = state.weight.toDoubleOrNull() ?: return null
+        val ageValue = state.age.trim().toIntOrNull() ?: return null
+        val heightValue = state.height.trim().toDoubleOrNull()?.takeIf { it.isFinite() }?.roundToInt() ?: return null
+        val weightValue = state.weight.trim().toDoubleOrNull() ?: return null
         val activity = state.activityLevel ?: return null
 
-        if (ageValue <= 0 || ageValue > 120 ||
-            heightValue <= 0 || heightValue > 300 ||
-            weightValue <= 0 || weightValue > 500
+        if (ageValue !in 1..120 ||
+            heightValue !in 50..300 ||
+            !weightValue.isFinite() || weightValue <= 0.0 || weightValue > 500.0
         ) {
             return null
         }
@@ -347,26 +376,26 @@ class SettingsViewModel(
         val state = _uiState.value
 
         // 校验宏量
-        val cal = state.calories.toDoubleOrNull()
-        if (cal == null || cal <= 0) {
+        val cal = state.calories.trim().toDoubleOrNull()
+        if (cal == null || !cal.isFinite() || cal <= 0) {
             sendEvent(UIEvent.ShowToast("热量目标需为正数")); return
         }
         if (cal > 10000) {
             sendEvent(UIEvent.ShowToast("热量目标不应超过 10000")); return
         }
 
-        val pro = state.protein.toDoubleOrNull()
-        if (pro == null || pro <= 0) {
+        val pro = state.protein.trim().toDoubleOrNull()
+        if (pro == null || !pro.isFinite() || pro <= 0) {
             sendEvent(UIEvent.ShowToast("蛋白质目标需为正数")); return
         }
 
-        val f = state.fat.toDoubleOrNull()
-        if (f == null || f <= 0) {
+        val f = state.fat.trim().toDoubleOrNull()
+        if (f == null || !f.isFinite() || f <= 0) {
             sendEvent(UIEvent.ShowToast("脂肪目标需为正数")); return
         }
 
-        val c = state.carbs.toDoubleOrNull()
-        if (c == null || c <= 0) {
+        val c = state.carbs.trim().toDoubleOrNull()
+        if (c == null || !c.isFinite() || c <= 0) {
             sendEvent(UIEvent.ShowToast("碳水目标需为正数")); return
         }
 
@@ -374,12 +403,21 @@ class SettingsViewModel(
             sendEvent(UIEvent.ShowToast("营养素目标不应超过 500g")); return
         }
 
+        // 若填写了部分身体档案但存在未填完/超界项，阻止静默丢失已有档案
+        val profileError = validatePartialBodyProfile(state)
+        if (profileError != null) {
+            sendEvent(UIEvent.ShowToast(profileError)); return
+        }
+
         // 校验微量
         val micros = mutableListOf<MicronutrientTarget>()
         for (mn in state.micronutrients) {
-            val target = mn.target.toDoubleOrNull()
-            if (target == null || target <= 0) {
+            val target = mn.target.trim().toDoubleOrNull()
+            if (target == null || !target.isFinite() || target <= 0) {
                 sendEvent(UIEvent.ShowToast("${mn.name}目标需为正数")); return
+            }
+            if (target > 100000) {
+                sendEvent(UIEvent.ShowToast("${mn.name}目标数值过大")); return
             }
             micros.add(
                 MicronutrientTarget(
@@ -412,11 +450,18 @@ class SettingsViewModel(
 
     fun exportData(context: Context) {
         viewModelScope.launchWithErrorFeedback("操作失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {
+            if (repository.getTargets().first() == null) {
+                repository.setTargets(NutrientConstants.getDefaultTargets())
+            }
+            if (repository.getMeta().first() == null) {
+                repository.setMeta(NutrientConstants.getDefaultMeta())
+            }
             val result = backupManager.exportData()
             if (!result.success) {
                 sendEvent(UIEvent.ShowToast(result.error.ifEmpty { "导出失败" }))
                 return@launchWithErrorFeedback
             }
+            loadStorageStatus()
             try {
                 val clipboard =
                     context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -494,6 +539,8 @@ class SettingsViewModel(
             if (result.success) {
                 sendEvent(UIEvent.ShowToast(result.summary))
                 hideImport()
+                fieldRevisions.clear()
+                targetsLoaded = false
                 loadTargets()
                 loadStorageStatus()
             } else {

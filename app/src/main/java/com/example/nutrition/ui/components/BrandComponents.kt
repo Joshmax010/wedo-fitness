@@ -1,9 +1,8 @@
 package com.example.nutrition.ui.components
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -264,8 +263,8 @@ fun BrandBottomSheet(
                                     latest.releaseUrl.ifBlank { "https://github.com/Joshmax010/wedo-fitness/releases" }
                                 }
                                 try {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl)))
-                                } catch (_: ActivityNotFoundException) {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, targetUrl.toUri()))
+                                } catch (_: Exception) {
                                     Toast.makeText(context, "未找到可用浏览器", Toast.LENGTH_SHORT).show()
                                 }
                             },
@@ -350,8 +349,8 @@ fun BrandBottomSheet(
                     .fillMaxWidth()
                     .clickable {
                         try {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Joshmax010/wedo-fitness")))
-                        } catch (_: ActivityNotFoundException) {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Joshmax010/wedo-fitness".toUri()))
+                        } catch (_: Exception) {
                             Toast.makeText(context, "未找到可用浏览器", Toast.LENGTH_SHORT).show()
                         }
                     },

@@ -10,6 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,10 +44,11 @@ fun DateNavigationBar(
         // 前一天
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(40.dp)
                 .clip(CircleShape)
                 .background(BgCard)
-                .clickable(onClick = onPrev),
+                .clickable(role = Role.Button, onClick = onPrev)
+                .semantics { contentDescription = "前一天" },
             contentAlignment = Alignment.Center
         ) {
             Text(text = "‹", fontSize = 22.sp, color = TextPrimary)
@@ -55,7 +59,7 @@ fun DateNavigationBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clip(RoundedCornerShape(4.dp))
-                .clickable(onClick = onDateClick)
+                .clickable(role = Role.Button, onClick = onDateClick)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
@@ -77,16 +81,21 @@ fun DateNavigationBar(
             }
         }
 
-        // 后一天
+        // 后一天（今天时禁用）
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(40.dp)
                 .clip(CircleShape)
                 .background(BgCard)
-                .clickable(onClick = onNext),
+                .clickable(enabled = !isToday, role = Role.Button, onClick = onNext)
+                .semantics { contentDescription = "后一天" },
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "›", fontSize = 22.sp, color = TextPrimary)
+            Text(
+                text = "›",
+                fontSize = 22.sp,
+                color = if (isToday) TextPrimary.copy(alpha = 0.28f) else TextPrimary
+            )
         }
     }
 }

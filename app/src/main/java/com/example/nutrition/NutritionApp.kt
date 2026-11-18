@@ -29,14 +29,14 @@ class NutritionApp : Application() {
         super.onCreate()
         instance = this
 
-        // 启动时迁移 schema 版本
+        // 启动时初始化默认数据并迁移 schema/应用版本号
         appScope.launch {
             try {
-                migrateSchemaVersion()
+                initializeOrMigrateAppState()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("NutritionApp", "Unable to read application metadata", e)
+                Log.e("NutritionApp", "Unable to initialize or migrate application state", e)
             }
         }
 
@@ -53,13 +53,26 @@ class NutritionApp : Application() {
     }
 
     /**
-     * 检查并迁移 AppMeta 的 schemaVersion 到最新版本
+     * 首次安装补齐默认目标与元信息，老版本同步迁移 schemaVersion 与 version
      */
-    private suspend fun migrateSchemaVersion() {
-        val meta = repository.getMeta().first() ?: return
-        val latest = NutrientConstants.SCHEMA_VERSION
-        if (meta.schemaVersion < latest) {
-            repository.setMeta(meta.copy(schemaVersion = latest))
+    private suspend fun initializeOrMigrateAppState() {
+        if (repository.getTargets().first() == null) {
+            repository.setTargets(NutrientConstants.getDefaultTargets())
+        }
+        val meta = repository.getMeta().first()
+        if (meta == null) {
+            repository.setMeta(NutrientConstants.getDefaultMeta())
+            return
+        }
+        val latestSchema = NutrientConstants.SCHEMA_VERSION
+        val latestVersion = NutrientConstants.APP_VERSION
+        if (meta.schemaVersion < latestSchema || meta.version != latestVersion) {
+            repository.setMeta(
+                meta.copy(
+                    schemaVersion = maxOf(meta.schemaVersion, latestSchema),
+                    version = latestVersion
+                )
+            )
         }
     }
 

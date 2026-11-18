@@ -175,8 +175,14 @@ class RoomLocalStorageRepository(
                 if (filtered.size == mealRecords.size) {
                     return@withTransaction Resource.Error("记录不存在或已被删除")
                 }
-                recordDao.insert(dayData.withMeal(mealKey, filtered).toEntity(dateStr))
-                check(verifyDayRecordWrite(dateStr))
+                val updatedDay = dayData.withMeal(mealKey, filtered)
+                if (updatedDay.isEmpty()) {
+                    recordDao.delete(dateStr)
+                    check(recordDao.getByDate(dateStr) == null)
+                } else {
+                    recordDao.insert(updatedDay.toEntity(dateStr))
+                    check(verifyDayRecordWrite(dateStr))
+                }
                 Resource.Success(Unit)
             }
         } catch (e: CancellationException) {

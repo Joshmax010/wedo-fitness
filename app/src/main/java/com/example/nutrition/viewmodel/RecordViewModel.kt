@@ -86,6 +86,7 @@ class RecordViewModel(
         // 食物模板
         val templates: List<FoodTemplate> = emptyList(),
         val templateSuggestions: List<FoodTemplate> = emptyList(),
+        val suppressSuggestions: Boolean = false,
         val dataError: String? = null,
         val templateError: String? = null
     )
@@ -120,16 +121,17 @@ class RecordViewModel(
         // Reuse the already-observed template list for autocomplete.
         viewModelScope.launchWithErrorFeedback("读取食物模板失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {
             combine(
-                _uiState.map { it.foodName }.distinctUntilChanged(),
+                _uiState.map { it.foodName to it.suppressSuggestions }.distinctUntilChanged(),
                 _uiState.map { it.templates }.distinctUntilChanged()
-            ) { query, templates ->
+            ) { (query, suppress), templates ->
                 val trimmed = query.trim()
-                if (trimmed.isEmpty()) emptyList()
+                if (suppress || trimmed.isEmpty()) emptyList()
                 else templates.filter { it.name.contains(trimmed, ignoreCase = true) }.take(5)
             }.collect { suggestions -> _uiState.update { it.copy(templateSuggestions = suggestions) } }
         }
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun loadData() {
         if (templatesJob?.isActive != true) {
             templatesJob = viewModelScope.launchWithErrorFeedback("读取食物模板失败，请重试", { message ->
@@ -168,10 +170,18 @@ class RecordViewModel(
         if (initialized && initialMealArgument == mealKey && initialDateArgument == date) return
         initialMealArgument = mealKey
         initialDateArgument = date
-        if (initialized && hasPendingForm()) return
+        // 仅当底部 Tab 无参切回时保留未保存草稿；从首页卡片携带日期/餐次显式跳转应允许切换目标上下文
+        if (initialized && mealKey == null && date == null && hasPendingForm()) return
+        val targetDate = date ?: _uiState.value.currentDate
+        val targetMeal = mealKey ?: MealKey.fromCurrentTime()
+        if (initialized && _uiState.value.editingId != null &&
+            (targetDate != _uiState.value.currentDate || targetMeal != _uiState.value.currentMeal)
+        ) {
+            resetForm()
+        }
         initialized = true
         explicitMealSelection = mealKey != null
-        _uiState.update { it.withSelection(date = date ?: it.currentDate, meal = mealKey ?: MealKey.fromCurrentTime()) }
+        _uiState.update { it.withSelection(date = targetDate, meal = targetMeal) }
         loadData()
     }
 
@@ -192,6 +202,8 @@ class RecordViewModel(
      * 跳转到指定日期
      */
     fun pickDate(dateStr: String) {
+        if (_uiState.value.currentDate == dateStr) return
+        if (_uiState.value.editingId != null) resetForm()
         _uiState.update { it.withSelection(date = dateStr) }
         loadData()
     }
@@ -220,15 +232,17 @@ class RecordViewModel(
     // ==================== 日期切换 ====================
 
     fun prevDay() {
-        _uiState.update { it.withSelection(date = DateUtils.prevDay(it.currentDate)) }
+        val prev = DateUtils.prevDay(_uiState.value.currentDate)
+        if (_uiState.value.editingId != null) resetForm()
+        _uiState.update { it.withSelection(date = prev) }
         loadData()
     }
 
     fun nextDay() {
-        _uiState.update { state ->
-            val next = DateUtils.nextDay(state.currentDate)
-            if (next <= DateUtils.today()) state.withSelection(date = next) else state
-        }
+        val next = DateUtils.nextDay(_uiState.value.currentDate)
+        if (next > DateUtils.today()) return
+        if (_uiState.value.editingId != null) resetForm()
+        _uiState.update { it.withSelection(date = next) }
         loadData()
     }
 
@@ -236,7 +250,7 @@ class RecordViewModel(
 
     fun onNameInput(value: String) {
         formRevision++
-        _uiState.update { it.copy(foodName = value) }
+        _uiState.update { it.copy(foodName = value, suppressSuggestions = false) }
     }
 
     fun onCaloriesInput(value: String) {
@@ -282,19 +296,24 @@ class RecordViewModel(
     /** 按当前重量，将实际摄入值换算为每100g基准值 */
     private fun UiState.withBaseFromActuals(): UiState {
         val w = weight.toDoubleOrNull() ?: 100.0
-        if (w <= 0) return this
+        if (!w.isFinite() || w <= 0) return this
         return copy(
             baseCalories = calories.toDoubleOrNull()
+                ?.takeIf { it.isFinite() }
                 ?.let { UnitConverter.formatForInput(it * 100 / w) } ?: "",
             baseProtein = protein.toDoubleOrNull()
+                ?.takeIf { it.isFinite() }
                 ?.let { UnitConverter.formatForInput(it * 100 / w) } ?: "",
             baseFat = fat.toDoubleOrNull()
+                ?.takeIf { it.isFinite() }
                 ?.let { UnitConverter.formatForInput(it * 100 / w) } ?: "",
             baseCarbs = carbs.toDoubleOrNull()
+                ?.takeIf { it.isFinite() }
                 ?.let { UnitConverter.formatForInput(it * 100 / w) } ?: "",
             baseFormMicronutrients = formMicronutrients.map { actual ->
                 val base = if (actual.value.isEmpty()) "" else {
                     actual.value.toDoubleOrNull()
+                        ?.takeIf { it.isFinite() }
                         ?.let { UnitConverter.formatForInput(it * 100 / w) } ?: ""
                 }
                 actual.copy(value = base)
@@ -305,7 +324,7 @@ class RecordViewModel(
     /** 按当前重量，将每100g基准值换算为实际摄入值 */
     private fun UiState.withActualsFromBase(): UiState {
         val w = weight.toDoubleOrNull() ?: 100.0
-        if (w <= 0) return this
+        if (!w.isFinite() || w <= 0) return this
         val newCalories = baseCalories.toDoubleOrNull()
             ?.let { UnitConverter.formatForInput(it * w / 100) } ?: calories
         return copy(
@@ -385,7 +404,8 @@ class RecordViewModel(
             carbs = state.carbs,
             micros = state.formMicronutrients.map {
                 MealFormValidator.MicroInput(name = it.name, value = it.value)
-            }
+            },
+            weight = state.weight.trim()
         )
         if (error != null) {
             sendEvent(UIEvent.ShowToast(error))
@@ -399,7 +419,7 @@ class RecordViewModel(
 
         // 构造微量营养素列表（只保留有值的）
         val micros = state.formMicronutrients
-            .filter { it.value.isNotEmpty() }
+            .filter { it.value.isNotBlank() }
             .map { MealMicro(key = it.key, value = it.value.toDouble()) }
 
         val now = Instant.now().toString()
@@ -411,7 +431,7 @@ class RecordViewModel(
             fat = f,
             carbs = c,
             micronutrients = micros,
-            weightGrams = state.weight.toDoubleOrNull() ?: 100.0,
+            weightGrams = state.weight.trim().takeIf { it.isNotEmpty() }?.toDouble() ?: 100.0,
             createdAt = editingCreatedAt ?: now
         )
 
@@ -462,22 +482,23 @@ class RecordViewModel(
     fun editRecord(recordId: String) {
         formRevision++
         val record = _uiState.value.recordList.find { it.id == recordId } ?: return
+        val safeWeight = record.weightGrams.takeIf { it.isFinite() && it > 0.0 } ?: 100.0
 
         editingCreatedAt = record.createdAt
         val caloriesText = UnitConverter.formatForInput(record.calories)
         _uiState.update {
             it.copy(
                 foodName = record.name,
-                weight = UnitConverter.formatForInput(record.weightGrams),
+                weight = UnitConverter.formatForInput(safeWeight),
                 calories = caloriesText,
                 kiloJoules = UnitConverter.caloriesToKiloJoules(caloriesText),
                 protein = if (record.protein > 0) UnitConverter.formatForInput(record.protein) else "",
                 fat = if (record.fat > 0) UnitConverter.formatForInput(record.fat) else "",
                 carbs = if (record.carbs > 0) UnitConverter.formatForInput(record.carbs) else "",
-                baseCalories = UnitConverter.formatForInput(record.calories / record.weightGrams * 100),
-                baseProtein = UnitConverter.formatForInput(record.protein / record.weightGrams * 100),
-                baseFat = UnitConverter.formatForInput(record.fat / record.weightGrams * 100),
-                baseCarbs = UnitConverter.formatForInput(record.carbs / record.weightGrams * 100),
+                baseCalories = UnitConverter.formatForInput(record.calories / safeWeight * 100),
+                baseProtein = UnitConverter.formatForInput(record.protein / safeWeight * 100),
+                baseFat = UnitConverter.formatForInput(record.fat / safeWeight * 100),
+                baseCarbs = UnitConverter.formatForInput(record.carbs / safeWeight * 100),
                 formMicronutrients = record.micronutrients.map { mn ->
                     val config = NutrientConstants.MICROS.find { config -> config.key == mn.key }
                     FormMicro(
@@ -493,10 +514,11 @@ class RecordViewModel(
                         key = mn.key,
                         name = config?.name ?: mn.key,
                         unit = config?.unit ?: "",
-                        value = UnitConverter.formatForInput(mn.value / record.weightGrams * 100)
+                        value = UnitConverter.formatForInput(mn.value / safeWeight * 100)
                     )
                 },
                 editingId = record.id,
+                suppressSuggestions = true,
                 templateSuggestions = emptyList()
             )
         }
@@ -528,7 +550,12 @@ class RecordViewModel(
             val result = repository.deleteRecord(target.dateStr, target.mealKey, target.id)
             when (result) {
                 is Resource.Error -> sendEvent(UIEvent.ShowToast(result.message))
-                is Resource.Success -> sendEvent(UIEvent.ShowToast("已删除"))
+                is Resource.Success -> {
+                    if (_uiState.value.editingId == target.id) {
+                        resetForm()
+                    }
+                    sendEvent(UIEvent.ShowToast("已删除"))
+                }
             }
         }
     }
@@ -542,6 +569,7 @@ class RecordViewModel(
     fun applyTemplate(template: FoodTemplate) {
         formRevision++
         _uiState.update { state ->
+            val validWeight = state.weight.toDoubleOrNull()?.let { it.isFinite() && it > 0.0 } == true
             state.copy(
                 foodName = template.name,
                 baseCalories = UnitConverter.formatForInput(template.calories),
@@ -557,14 +585,15 @@ class RecordViewModel(
                         value = UnitConverter.formatForInput(micro.value)
                     )
                 },
-                weight = if (state.weight.isEmpty()) "100" else state.weight,
+                weight = if (validWeight) state.weight else "100",
+                suppressSuggestions = true,
                 templateSuggestions = emptyList()
             ).withActualsFromBase()
         }
     }
 
     fun clearTemplateSuggestions() {
-        _uiState.update { it.copy(templateSuggestions = emptyList()) }
+        _uiState.update { it.copy(suppressSuggestions = true, templateSuggestions = emptyList()) }
     }
 
     // ==================== 重置表单 ====================
@@ -589,6 +618,8 @@ class RecordViewModel(
         baseFat = "",
         baseCarbs = "",
         baseFormMicronutrients = emptyList(),
-        editingId = null
+        editingId = null,
+        suppressSuggestions = true,
+        templateSuggestions = emptyList()
     )
 }

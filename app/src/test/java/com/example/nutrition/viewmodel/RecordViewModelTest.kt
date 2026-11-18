@@ -210,4 +210,119 @@ class RecordViewModelTest {
         assertFalse(viewModel.uiState.value.isLoadingRecords)
     }
 
+    @Test
+    fun applyTemplateAndEditRecordKeepSuggestionsClosedUntilTypedAgain() = runTest {
+        val milk = FoodTemplate(id = "milk", name = "牛奶", calories = 60.0, protein = 3.0)
+        val today = DateUtils.today()
+        val backing = BackupManagerTest.FakeRepository()
+        backing.saveFoodTemplate(milk)
+        val dayRecordsFlow = MutableStateFlow(DayRecords(today))
+        val repository = object : LocalStorageRepository by backing {
+            override fun getDayRecords(dateStr: String) = dayRecordsFlow
+            override suspend fun addRecord(dateStr: String, mealKey: MealKey, record: MealRecord): Resource<Unit> {
+                val res = backing.addRecord(dateStr, mealKey, record)
+                dayRecordsFlow.value = backing.getDayRecords(dateStr).first()
+                return res
+            }
+        }
+        val viewModel = RecordViewModel(repository)
+        store.put("record", viewModel)
+        runCurrent()
+
+        viewModel.onNameInput("牛")
+        runCurrent()
+        assertEquals(listOf(milk), viewModel.uiState.value.templateSuggestions)
+
+        viewModel.applyTemplate(milk)
+        runCurrent()
+        assertTrue(viewModel.uiState.value.templateSuggestions.isEmpty())
+        assertEquals("牛奶", viewModel.uiState.value.foodName)
+
+        viewModel.onWeightInput("0")
+        viewModel.saveRecord()
+        runCurrent()
+        assertTrue(backing.getDayRecords(viewModel.uiState.value.currentDate).first().isEmpty())
+
+        viewModel.applyTemplate(milk)
+        runCurrent()
+        assertEquals("100", viewModel.uiState.value.weight)
+        assertEquals("60", viewModel.uiState.value.calories)
+
+        viewModel.saveRecord()
+        runCurrent()
+        val savedId = backing.getDayRecords(viewModel.uiState.value.currentDate).first()
+            .getMeal(viewModel.uiState.value.currentMeal).single().id
+
+        viewModel.editRecord(savedId)
+        runCurrent()
+        assertEquals(savedId, viewModel.uiState.value.editingId)
+        assertTrue(viewModel.uiState.value.templateSuggestions.isEmpty())
+
+        viewModel.onNameInput("牛")
+        runCurrent()
+        assertEquals(listOf(milk), viewModel.uiState.value.templateSuggestions)
+    }
+
+    @Test
+    fun switchingDateWhileEditingAndDeletingEditingRecordResetForm() = runTest {
+        val repository = BackupManagerTest.FakeRepository()
+        val today = DateUtils.today()
+        val existing = MealRecord(id = "rec-1", name = "早餐麦片", calories = 300.0)
+        repository.setDayRecords(today, DayRecords(today, breakfast = listOf(existing)))
+        val viewModel = RecordViewModel(repository)
+        store.put("record", viewModel)
+        viewModel.initWithMeal(MealKey.BREAKFAST, today)
+        runCurrent()
+
+        viewModel.editRecord("rec-1")
+        assertEquals("rec-1", viewModel.uiState.value.editingId)
+
+        viewModel.prevDay()
+        runCurrent()
+        assertNull(viewModel.uiState.value.editingId)
+        assertEquals("", viewModel.uiState.value.foodName)
+
+        viewModel.nextDay()
+        runCurrent()
+        viewModel.editRecord("rec-1")
+        viewModel.requestDelete("rec-1")
+        viewModel.confirmDelete()
+        runCurrent()
+        assertNull(viewModel.uiState.value.editingId)
+        assertEquals("", viewModel.uiState.value.foodName)
+        assertTrue(repository.getDayRecords(today).first().isEmpty())
+    }
+
+    @Test
+    fun initWithMealExplicitNavigationOverridesEditAndRestoringWithoutArgsPreservesDraft() = runTest {
+        val repository = BackupManagerTest.FakeRepository()
+        val today = DateUtils.today()
+        val yesterday = DateUtils.prevDay(today)
+        repository.setDayRecords(today, DayRecords(today, breakfast = listOf(MealRecord(id = "r-today", name = "今日蛋", calories = 150.0))))
+        repository.setDayRecords(yesterday, DayRecords(yesterday, dinner = listOf(MealRecord(id = "r-yest", name = "昨日面", calories = 400.0))))
+
+        val viewModel = RecordViewModel(repository)
+        store.put("record", viewModel)
+        viewModel.initWithMeal(MealKey.BREAKFAST, today)
+        runCurrent()
+
+        viewModel.editRecord("r-today")
+        assertEquals("r-today", viewModel.uiState.value.editingId)
+
+        // 无参切回（模拟底部 Tab 切回）应保留草稿/编辑态
+        viewModel.initWithMeal(null, null)
+        runCurrent()
+        assertEquals(today, viewModel.uiState.value.currentDate)
+        assertEquals("r-today", viewModel.uiState.value.editingId)
+
+        // 从首页显式点击另一天餐次应切换目标并清除旧 editingId
+        viewModel.initWithMeal(MealKey.DINNER, yesterday)
+        runCurrent()
+        assertEquals(yesterday, viewModel.uiState.value.currentDate)
+        assertEquals(MealKey.DINNER, viewModel.uiState.value.currentMeal)
+        assertNull(viewModel.uiState.value.editingId)
+        assertEquals("", viewModel.uiState.value.foodName)
+        assertEquals("r-yest", viewModel.uiState.value.recordList.single().id)
+    }
+
 }

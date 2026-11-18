@@ -83,18 +83,20 @@ object Calculator {
         val micronutrients = mutableMapOf<String, Double>()
 
         for (r in mealRecords) {
-            calories += r.calories
-            protein += r.protein
-            fat += r.fat
-            carbs += r.carbs
+            if (r.calories.isFinite()) calories += r.calories
+            if (r.protein.isFinite()) protein += r.protein
+            if (r.fat.isFinite()) fat += r.fat
+            if (r.carbs.isFinite()) carbs += r.carbs
 
             for (mn in r.micronutrients) {
-                micronutrients[mn.key] = (micronutrients[mn.key] ?: 0.0) + mn.value
+                if (mn.value.isFinite()) {
+                    micronutrients[mn.key] = (micronutrients[mn.key] ?: 0.0) + mn.value
+                }
             }
         }
 
         return MealAggregate(
-            calories = calories.roundToInt(),
+            calories = if (calories.isFinite()) calories.roundToInt() else 0,
             protein = roundOne(protein),
             fat = roundOne(fat),
             carbs = roundOne(carbs),
@@ -143,6 +145,7 @@ object Calculator {
      * 对应 JS: calcGap(consumed, target)
      */
     fun calcGap(consumed: Double, target: Double): Double {
+        if (!consumed.isFinite() || !target.isFinite()) return 0.0
         return roundOne(consumed - target)
     }
 
@@ -151,7 +154,7 @@ object Calculator {
      * 对应 JS: calcAchievementRate(consumed, target)
      */
     fun calcAchievementRate(consumed: Double, target: Double): Double {
-        if (target == 0.0) return 0.0
+        if (!target.isFinite() || target <= 0.0 || !consumed.isFinite()) return 0.0
         return roundOne(consumed / target * 100.0)
     }
 
@@ -286,6 +289,7 @@ object Calculator {
 
     /** 四舍五入到 1 位小数 */
     private fun roundOne(value: Double): Double {
+        if (!value.isFinite()) return 0.0
         return (value * 10).roundToInt() / 10.0
     }
 }

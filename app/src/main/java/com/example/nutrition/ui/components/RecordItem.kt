@@ -2,10 +2,6 @@ package com.example.nutrition.ui.components
 
 import com.example.nutrition.domain.usecase.UnitConverter
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nutrition.domain.constants.NutrientConstants
@@ -148,7 +145,7 @@ private fun RecordItemContent(record: MealRecord) {
         // 头部：名称 + 克重 + 热量
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             Text(
@@ -157,6 +154,7 @@ private fun RecordItemContent(record: MealRecord) {
                 fontWeight = FontWeight.SemiBold,
                 color = TextPrimary,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
             val weightText = if (record.weightGrams == 100.0) "" else "${UnitConverter.formatNutrient(record.weightGrams)}g · "
@@ -187,21 +185,24 @@ private fun RecordItemContent(record: MealRecord) {
             }
         }
 
-        // 微量营养素标签（解析中文名称）
-        val displayMicros = record.micronutrients.map { micro ->
-            val name = NutrientConstants.getMicroName(micro.key)
-            val unit = NutrientConstants.getMicroUnit(micro.key)
-            Triple(micro.key, name, "${UnitConverter.formatNutrient(micro.value)}$unit")
-        }
+        // 微量营养素标签（解析中文名称，受全局显示开关控制）
+        val showMicronutrients = com.example.nutrition.ui.theme.LocalAppearance.current.showMicronutrients
+        if (showMicronutrients) {
+            val displayMicros = record.micronutrients.map { micro ->
+                val name = NutrientConstants.getMicroName(micro.key)
+                val unit = NutrientConstants.getMicroUnit(micro.key)
+                Triple(micro.key, name, "${UnitConverter.formatNutrient(micro.value)}$unit")
+            }
 
-        if (displayMicros.isNotEmpty()) {
-            FlowRow(
-                modifier = Modifier.padding(top = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                displayMicros.forEach { (_, name, valueStr) ->
-                    NutrientTag(text = "$name $valueStr", isMicro = true)
+            if (displayMicros.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier.padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    displayMicros.forEach { (_, name, valueStr) ->
+                        NutrientTag(text = "$name $valueStr", isMicro = true)
+                    }
                 }
             }
         }

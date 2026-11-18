@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.nativeCanvas
@@ -21,8 +21,8 @@ import com.example.nutrition.domain.model.BodyRecord
 import com.example.nutrition.ui.theme.Primary
 import com.example.nutrition.ui.theme.TextPrimary
 import com.example.nutrition.ui.theme.TextSecondary
+import java.util.Locale
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * 体重趋势折线图
@@ -36,6 +36,9 @@ fun WeightLineChart(
     val labelColor = TextSecondary
     val lineColor = Primary
     val pointColor = com.example.nutrition.ui.theme.BgCard
+    val textPaint = remember {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "体重趋势（kg）",
@@ -78,18 +81,16 @@ fun WeightLineChart(
                     end = Offset(size.width - rightPad, y),
                     strokeWidth = 1f
                 )
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        String.format("%.1f", yVal),
-                        leftPad - 4.dp.toPx(),
-                        y + 4.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = labelColor.toArgb()
-                            textSize = 9.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.RIGHT
-                        }
-                    )
-                }
+                drawContext.canvas.nativeCanvas.drawText(
+                    String.format(Locale.US, "%.1f", yVal),
+                    leftPad - 4.dp.toPx(),
+                    y + 4.dp.toPx(),
+                    textPaint.apply {
+                        color = labelColor.toArgb()
+                        textSize = 9.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.RIGHT
+                    }
+                )
             }
 
             val xStep = chartW / (records.size - 1)
@@ -134,22 +135,23 @@ fun WeightLineChart(
                 drawCircle(color = lineColor, radius = 3.dp.toPx(), center = point)
                 drawCircle(color = pointColor, radius = 1.5.dp.toPx(), center = point)
 
+                val dateLabel = if (record.dateStr.length >= 5) record.dateStr.substring(5) else record.dateStr
                 drawContext.canvas.nativeCanvas.apply {
                     drawText(
-                        String.format("%.1f", record.weightKg),
+                        String.format(Locale.US, "%.1f", record.weightKg),
                         point.x,
                         point.y - 6.dp.toPx(),
-                        android.graphics.Paint().apply {
+                        textPaint.apply {
                             color = lineColor.toArgb()
                             textSize = 8.sp.toPx()
                             textAlign = android.graphics.Paint.Align.CENTER
                         }
                     )
                     drawText(
-                        record.dateStr.substring(5),
+                        dateLabel,
                         point.x,
                         topPad + chartH + 16.dp.toPx(),
-                        android.graphics.Paint().apply {
+                        textPaint.apply {
                             color = labelColor.toArgb()
                             textSize = 9.sp.toPx()
                             textAlign = android.graphics.Paint.Align.CENTER

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +46,9 @@ fun NutrientBarChart(
 ) {
     val gridColor = com.example.nutrition.ui.theme.Divider
     val labelColor = TextSecondary
+    val textPaint = remember {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "宏量营养素每日摄入",
@@ -87,18 +91,16 @@ fun NutrientBarChart(
                     end = Offset(size.width - rightPad, y),
                     strokeWidth = 1f
                 )
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        yVal.toString(),
-                        leftPad - 4.dp.toPx(),
-                        y + 4.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = labelColor.toArgb()
-                            textSize = 9.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.RIGHT
-                        }
-                    )
-                }
+                drawContext.canvas.nativeCanvas.drawText(
+                    yVal.toString(),
+                    leftPad - 4.dp.toPx(),
+                    y + 4.dp.toPx(),
+                    textPaint.apply {
+                        color = labelColor.toArgb()
+                        textSize = 9.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.RIGHT
+                    }
+                )
             }
 
             // 柱状图绘制
@@ -130,18 +132,16 @@ fun NutrientBarChart(
                 }
 
                 // X 轴标签
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        bar.label,
-                        groupCenterX,
-                        topPad + chartH + 16.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = labelColor.toArgb()
-                            textSize = 9.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.CENTER
-                        }
-                    )
-                }
+                drawContext.canvas.nativeCanvas.drawText(
+                    bar.label,
+                    groupCenterX,
+                    topPad + chartH + 16.dp.toPx(),
+                    textPaint.apply {
+                        color = labelColor.toArgb()
+                        textSize = 9.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.CENTER
+                    }
+                )
             }
         }
 

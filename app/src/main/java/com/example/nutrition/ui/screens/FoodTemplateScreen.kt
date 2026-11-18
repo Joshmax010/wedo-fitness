@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,14 +44,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.nutrition.NutritionApp
 import com.example.nutrition.domain.usecase.UnitConverter
 import com.example.nutrition.domain.model.FoodTemplate
@@ -71,6 +74,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
@@ -100,8 +105,17 @@ fun FoodTemplateScreen(
         else Float.POSITIVE_INFINITY
     }
 
+    val showScrollToTop by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 2 }
+    }
+    val filtered = remember(uiState.templates, uiState.searchQuery, uiState.selectedFilterTags) {
+        viewModel.filteredTemplates()
+    }
+    val availableTags = remember(uiState.templates, uiState.templateTags) {
+        viewModel.availableTags()
+    }
+
     Box(Modifier.fillMaxSize().background(BgMain)) {
-        val filtered = viewModel.filteredTemplates()
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
@@ -118,7 +132,7 @@ fun FoodTemplateScreen(
                     uiState.dataError?.let { DataLoadError(it, viewModel::initialize) }
                     SearchBar(query = uiState.searchQuery, onQueryChange = viewModel::onSearchQueryChange)
                     QuickTagFilterBar(
-                        availableTags = viewModel.availableTags(), selectedTags = uiState.selectedFilterTags,
+                        availableTags = availableTags, selectedTags = uiState.selectedFilterTags,
                         onTagToggle = viewModel::toggleFilterTag, onOpenAll = viewModel::openFilterDialog
                     )
                     SelectedTagRow(
@@ -145,7 +159,7 @@ fun FoodTemplateScreen(
 
         // 回到顶部按钮
         AnimatedVisibility(
-            visible = listState.firstVisibleItemIndex > 2,
+            visible = showScrollToTop,
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut(),
             modifier = Modifier
@@ -255,7 +269,7 @@ private fun QuickTagFilterBar(
 
 @Composable
 private fun rememberQuickTags(availableTags: List<String>): List<String> {
-    val curated = listOf("主食", "肉类", "海鲜", "豆制品", "蔬菜", "水果", "坚果", "零食", "饮品", "调味品")
+    val curated = listOf("主食", "蛋奶", "肉类", "海鲜", "豆制品", "蔬菜", "菌菇藻类", "水果", "坚果", "零食", "饮品", "调味品")
     return curated.filter { it in availableTags }
 }
 
@@ -287,7 +301,9 @@ private fun SelectedTagRow(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
                         .background(Primary)
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                        .clickable(role = Role.Button) { onTagRemove(tag) }
+                        .semantics { contentDescription = "取消筛选标签 $tag" }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -299,8 +315,7 @@ private fun SelectedTagRow(
                     Text(
                         text = "×",
                         fontSize = 14.sp,
-                        color = com.example.nutrition.ui.theme.TextInverse,
-                        modifier = Modifier.clickable { onTagRemove(tag) }
+                        color = com.example.nutrition.ui.theme.TextInverse
                     )
                 }
             }
@@ -371,7 +386,10 @@ private fun TemplateItem(
                         text = template.name,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = TextPrimary
+                        color = TextPrimary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     if (template.isPreset) {
                         Text(
@@ -467,7 +485,7 @@ private fun FilterDialog(viewModel: FoodTemplateViewModel, uiState: FoodTemplate
             Text("按标签筛选", fontWeight = FontWeight.Bold, color = TextPrimary)
         },
         text = {
-            val available = viewModel.availableTags()
+            val available = remember(uiState.templates, uiState.templateTags) { viewModel.availableTags() }
             Column {
                 if (available.isEmpty()) {
                     Text("暂无标签", color = TextSecondary)
@@ -522,12 +540,12 @@ private fun AddTemplateDialog(viewModel: FoodTemplateViewModel, uiState: FoodTem
             )
         },
         text = {
-            Column {
-                NutritionField(label = "名称", value = uiState.templateName, onValueChange = viewModel::onNameInput, keyboardType = KeyboardType.Text, placeholder = "")
-                NutritionField(label = "热量", value = uiState.templateCalories, onValueChange = viewModel::onCaloriesInput, keyboardType = KeyboardType.Decimal, placeholder = "")
-                NutritionField(label = "蛋白质", value = uiState.templateProtein, onValueChange = viewModel::onProteinInput, keyboardType = KeyboardType.Decimal, placeholder = "")
-                NutritionField(label = "脂肪", value = uiState.templateFat, onValueChange = viewModel::onFatInput, keyboardType = KeyboardType.Decimal, placeholder = "")
-                NutritionField(label = "碳水", value = uiState.templateCarbs, onValueChange = viewModel::onCarbsInput, keyboardType = KeyboardType.Decimal, placeholder = "")
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                NutritionField(label = "名称", value = uiState.templateName, onValueChange = viewModel::onNameInput, required = true, keyboardType = KeyboardType.Text, placeholder = "如 水煮蛋")
+                NutritionField(label = "热量", unit = "kcal/100g", value = uiState.templateCalories, onValueChange = viewModel::onCaloriesInput, required = true, keyboardType = KeyboardType.Decimal, placeholder = "必填")
+                NutritionField(label = "蛋白质", unit = "g/100g", value = uiState.templateProtein, onValueChange = viewModel::onProteinInput, keyboardType = KeyboardType.Decimal, placeholder = "选填")
+                NutritionField(label = "脂肪", unit = "g/100g", value = uiState.templateFat, onValueChange = viewModel::onFatInput, keyboardType = KeyboardType.Decimal, placeholder = "选填")
+                NutritionField(label = "碳水", unit = "g/100g", value = uiState.templateCarbs, onValueChange = viewModel::onCarbsInput, keyboardType = KeyboardType.Decimal, placeholder = "选填")
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -581,6 +599,8 @@ private fun TemplateTagEditor(viewModel: FoodTemplateViewModel, uiState: FoodTem
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .background(Primary)
+                            .clickable(role = Role.Button) { viewModel.removeTemplateTag(tag) }
+                            .semantics { contentDescription = "移除标签 $tag" }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -593,8 +613,7 @@ private fun TemplateTagEditor(viewModel: FoodTemplateViewModel, uiState: FoodTem
                         Text(
                             text = "×",
                             fontSize = 14.sp,
-                            color = com.example.nutrition.ui.theme.TextInverse,
-                            modifier = Modifier.clickable { viewModel.removeTemplateTag(tag) }
+                            color = com.example.nutrition.ui.theme.TextInverse
                         )
                     }
                 }
@@ -626,7 +645,9 @@ private fun TemplateTagEditor(viewModel: FoodTemplateViewModel, uiState: FoodTem
         }
 
         // 已有标签候选
-        val available = viewModel.availableTags().filter { it !in uiState.templateTags }
+        val available = remember(uiState.templates, uiState.templateTags) {
+            viewModel.availableTags().filter { it !in uiState.templateTags }
+        }
         if (available.isNotEmpty()) {
             Text(
                 text = "点击添加已有标签：",

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/src/main/res/drawable/ic_brand_logo_full.png" width="180" alt="WeDo Logo">
+  <img src="app/src/main/res/drawable-nodpi/ic_brand_logo_full.png" width="180" alt="WeDo Logo">
 </p>
 
 <p align="center">

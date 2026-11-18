@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.util.UUID
 
 /**
@@ -75,7 +76,15 @@ class FoodTemplateViewModel(
             _uiState.update { state -> state.copy(isLoading = false, dataError = message) }
         }) {
             repository.getAllFoodTemplates().collect { list ->
-                _uiState.update { state -> state.copy(templates = list, isLoading = false, dataError = null) }
+                val allTags = list.flatMapTo(mutableSetOf()) { it.tags }
+                _uiState.update { state ->
+                    state.copy(
+                        templates = list,
+                        selectedFilterTags = if (list.isEmpty()) emptySet() else state.selectedFilterTags.intersect(allTags),
+                        isLoading = false,
+                        dataError = null
+                    )
+                }
             }
         }
     }
@@ -201,6 +210,16 @@ class FoodTemplateViewModel(
 
     // ==================== 保存模板 ====================
 
+    private fun parseOptionalMacro(raw: String, label: String): Double? {
+        if (raw.isBlank()) return 0.0
+        val value = raw.trim().toDoubleOrNull()
+        if (value == null || !value.isFinite() || value < 0.0 || value > 500.0) {
+            sendEvent(UIEvent.ShowToast("${label}需为 0-500"))
+            return null
+        }
+        return value
+    }
+
     fun saveTemplate() {
         val state = _uiState.value
         val name = state.templateName.trim()
@@ -208,8 +227,8 @@ class FoodTemplateViewModel(
             sendEvent(UIEvent.ShowToast("请输入食物名称"))
             return
         }
-        val calories = state.templateCalories.toDoubleOrNull()
-        if (calories == null || calories < 0) {
+        val calories = state.templateCalories.trim().toDoubleOrNull()
+        if (calories == null || !calories.isFinite() || calories < 0) {
             sendEvent(UIEvent.ShowToast("热量需为非负数"))
             return
         }
@@ -218,12 +237,19 @@ class FoodTemplateViewModel(
             return
         }
 
-        val pro = state.templateProtein.toDoubleOrNull() ?: 0.0
-        val fat = state.templateFat.toDoubleOrNull() ?: 0.0
-        val carbs = state.templateCarbs.toDoubleOrNull() ?: 0.0
+        val pro = parseOptionalMacro(state.templateProtein, "蛋白质") ?: return
+        val fat = parseOptionalMacro(state.templateFat, "脂肪") ?: return
+        val carbs = parseOptionalMacro(state.templateCarbs, "碳水") ?: return
+
+        val pendingTag = state.newTagInput.trim()
+        val finalTags = if (pendingTag.isNotEmpty()) {
+            (state.templateTags + pendingTag).toList()
+        } else {
+            state.templateTags.toList()
+        }
 
         val isEdit = state.editingId != null
-        val isPreset = state.templates.find { it.id == state.editingId }?.isPreset ?: false
+        val existing = state.templates.find { it.id == state.editingId }
         val template = FoodTemplate(
             id = state.editingId ?: UUID.randomUUID().toString(),
             name = name,
@@ -231,8 +257,11 @@ class FoodTemplateViewModel(
             protein = pro,
             fat = fat,
             carbs = carbs,
-            tags = state.templateTags.toList(),
-            isPreset = isPreset
+            micronutrients = existing?.micronutrients ?: emptyList(),
+            tags = finalTags,
+            isPreset = existing?.isPreset ?: false,
+            source = existing?.source ?: "",
+            createdAt = existing?.createdAt ?: Instant.now().toString()
         )
 
         viewModelScope.launchWithErrorFeedback("操作失败，请重试", { sendEvent(UIEvent.ShowToast(it)) }) {

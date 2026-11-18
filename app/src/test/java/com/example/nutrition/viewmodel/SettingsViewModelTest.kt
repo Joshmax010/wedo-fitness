@@ -9,6 +9,7 @@ import com.example.nutrition.domain.usecase.BackupManager
 import com.example.nutrition.domain.usecase.BackupManagerTest
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -96,5 +97,57 @@ class SettingsViewModelTest {
         runCurrent()
         assertNull(viewModel.uiState.value.targetsError)
         assertEquals("2000", viewModel.uiState.value.calories) // Retry also retains the draft entered after failure.
+    }
+
+    @Test
+    fun calculateRecommendationsHandlesDecimalHeightAndSaveRejectsNaN() = runTest {
+        val repository = BackupManagerTest.FakeRepository()
+        val viewModel = SettingsViewModel(repository, BackupManager(repository))
+        store.put("settings", viewModel)
+        viewModel.initialize()
+        runCurrent()
+
+        viewModel.onGenderInput(com.example.nutrition.domain.model.Gender.MALE)
+        viewModel.onAgeInput("25")
+        viewModel.onHeightInput("170.5")
+        viewModel.onWeightInput("65")
+        viewModel.onActivityLevelInput(com.example.nutrition.domain.model.ActivityLevel.MODERATE)
+        viewModel.calculateRecommendations()
+        assertTrue(viewModel.uiState.value.showCalcDialog)
+        assertEquals(171, viewModel.uiState.value.calcResult!!.targets.bodyProfile!!.heightCm)
+
+        viewModel.dismissCalcDialog()
+        viewModel.onCaloriesInput("NaN")
+        viewModel.saveTargets()
+        runCurrent()
+        assertNull(repository.getTargets().first())
+    }
+
+    @Test
+    fun confirmImportClearsStaleFieldRevisionsAndRefreshesImportedTargets() = runTest {
+        val repository = BackupManagerTest.FakeRepository()
+        val viewModel = SettingsViewModel(repository, BackupManager(repository))
+        store.put("settings", viewModel)
+        viewModel.initialize()
+        runCurrent()
+
+        viewModel.onCaloriesInput("9999")
+        val importJson = """
+        {
+            "app": "nutrition-tracker",
+            "schemaVersion": 3,
+            "exportedAt": "2026-11-18T00:00:00Z",
+            "data": {
+                "targets": { "calories": 1850, "protein": 130, "fat": 55, "carbs": 200 },
+                "records": {}
+            }
+        }
+        """.trimIndent()
+        viewModel.onImportTextInput(importJson)
+        viewModel.confirmImport()
+        runCurrent()
+
+        assertEquals("1850", viewModel.uiState.value.calories)
+        assertEquals("130", viewModel.uiState.value.protein)
     }
 }

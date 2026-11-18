@@ -10,22 +10,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nutrition.domain.constants.NutrientConstants
-import com.example.nutrition.domain.model.MicronutrientTarget
-import com.example.nutrition.ui.theme.Info
+import com.example.nutrition.domain.usecase.UnitConverter
 import com.example.nutrition.ui.theme.Primary
 import com.example.nutrition.ui.theme.TextPrimary
 import com.example.nutrition.ui.theme.TextSecondary
@@ -74,7 +68,7 @@ fun NutrientPicker(
                 )
             } else {
                 LazyColumn {
-                    items(available) { nutrient ->
+                    items(available, key = { it.key }) { nutrient ->
                         NutrientPickerItem(
                             nutrient = nutrient,
                             onClick = {
@@ -130,7 +124,7 @@ private fun NutrientPickerItem(
                 color = TextPrimary
             )
             Text(
-                text = "目标 ${nutrient.target}${nutrient.unit}",
+                text = "目标 ${UnitConverter.formatNutrient(nutrient.target)}${nutrient.unit}",
                 fontSize = 12.sp,
                 color = TextSecondary
             )

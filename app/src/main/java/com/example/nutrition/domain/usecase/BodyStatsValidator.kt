@@ -16,19 +16,26 @@ object BodyStatsValidator {
         bodyFat: String,
         muscle: String
     ): String? {
-        val weightValue = weight.toDoubleOrNull()
-        if (weightValue == null || weightValue <= 0 || weightValue > 500) {
+        val weightValue = weight.trim().toDoubleOrNull()
+        if (weightValue == null || !weightValue.isFinite() || weightValue <= 0 || weightValue > 500) {
             return "请输入有效体重（0-500kg）"
         }
 
-        val bodyFatValue = bodyFat.toDoubleOrNull()
-        if (bodyFatValue != null && (bodyFatValue < 0 || bodyFatValue > 100)) {
-            return "体脂率需在 0-100% 之间"
+        if (bodyFat.isNotBlank()) {
+            val bodyFatValue = bodyFat.trim().toDoubleOrNull()
+            if (bodyFatValue == null || !bodyFatValue.isFinite() || bodyFatValue < 0 || bodyFatValue > 100) {
+                return "体脂率需在 0-100% 之间"
+            }
         }
 
-        val muscleValue = muscle.toDoubleOrNull()
-        if (muscleValue != null && (muscleValue < 0 || muscleValue > 500)) {
-            return "肌肉量需在 0-500kg 之间"
+        if (muscle.isNotBlank()) {
+            val muscleValue = muscle.trim().toDoubleOrNull()
+            if (muscleValue == null || !muscleValue.isFinite() || muscleValue < 0 || muscleValue > 500) {
+                return "肌肉量需在 0-500kg 之间"
+            }
+            if (muscleValue > weightValue) {
+                return "肌肉量不能超过体重"
+            }
         }
 
         return null
